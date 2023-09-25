@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.template import RequestContext
 import json
+from .databaseLogic import *
 
 def welcomePage(request):
     return render (request,'realestate/welcomePage.html')
@@ -33,12 +34,12 @@ def loginCheck(request):
         username = data.get('username', '')
         password = data.get('password', '')
 
-        # Define the fixed username and password for comparison
-        fixed_username = 'root'
-        fixed_password = 'root'
+
+        verdict = verify_login(username,password)
+
 
         # Compare the provided credentials to the fixed credentials
-        if username == fixed_username and password == fixed_password:
+        if verdict == True:
             # Credentials match
             response_data = {'success': True, 'message': 'Login successful'}
         else:
