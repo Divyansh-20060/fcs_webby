@@ -5,5 +5,6 @@ urlpatterns = [
     path('',welcomePage,name="index"),
     path('loginPage/',loginPage,name="wow"),
     path('signupPage/', signupPage, name = "sign up"),
-    path('mainPage', mainPage, name="main page")
+    path('mainPage', mainPage, name="main page"),
+    path('loginCheck/',loginCheck,name="loginCheck"),
 ]
