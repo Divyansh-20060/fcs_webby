@@ -44,5 +44,5 @@ loginButton.addEventListener('click', function() {
 
 function handleSubmitClick() {
     // Change the URL in the address bar
-    window.location.href = '/mainPage';  // Replace with the actual URL of your new page
+    window.location.href = '/buyerHome';  // Replace with the actual URL of your new page
 }

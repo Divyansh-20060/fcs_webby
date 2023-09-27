@@ -8,18 +8,28 @@ from .databaseLogic import *
 def welcomePage(request):
     return render (request,'realestate/welcomePage.html')
 
-
 def loginPage(request):
     return render(request, 'realestate/loginPage.html')
-
 
 def signupPage(request):
     return render(request, 'realestate/signupPage.html')
 
+def buyerHome(request):
+    print("django log: great success wow")
+    return render(request,'realestate/buyerHome.html')
+
+def buyerProfile(request):
+    return render(request,'realestate/buyerProfile.html')
+
+def showListings(request):
+    return render(request,'realestate/showListings.html')
+
+def purchaseHistory(request):
+    return render(request,'realestate/purchaseHistory.html')
+
 def mainPage(request):
     print("django log:yahoo")
     return render(request, 'realestate/mainPage.html')
-
 
 def loginCheck(request):
     

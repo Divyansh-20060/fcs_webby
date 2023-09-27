@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buyer Home</title>
+</head>
+<body>
+    <h1>Welcome to Buyer Home</h1>
+
+    <!-- Search for Listings -->
+    <section>
+        <h2>Search for Listings</h2>
+        <form action="showListings.html" method="get">
+            <input type="text" id="search-input" name="search-input" placeholder="property/ location/ ...">
+        </form>
+        <button id="submit" onclick="handleShowListings()">Search</button>
+
+    </section>
+
+    <!-- View Profile -->
+    <section>
+        <h2>View Profile</h2>
+        <button id="submit" onclick="handleViewProfile()">Profile</button>
+    </section>
+
+    <!-- Purchase History -->
+    <section>
+        <h2>Purchase History</h2>
+        <button id="submit" onclick="handlePurchaseHistory()">Purchase Statement</button>
+    </section>
+
+    <script type="text/javascript" src="{% static '/js/buyerHome.js' %}">
+    </script>
+</body>
+</html>
