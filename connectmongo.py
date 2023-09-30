@@ -10,4 +10,5 @@ if __name__ == "__main__":
     collection = db["user_cred"]
     
     collection.insert_one({"uname": "root","password": "root"})
+
     client.close()

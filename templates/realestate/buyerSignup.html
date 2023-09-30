@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Sign up Page</title>
 </head>
 <body>
-    <h1>Sign up</h1>
+    <h1>Sign up as buyer</h1>
     
     <form>
         <label for="textbox">Enter Name:</label>
@@ -27,7 +28,11 @@
         <input type="text" id="password_tb" name="password_tb" placeholder="Type something...">
     </form>
 
-    <button id="signup-submit" onclick= "handleSignupClick()">sign up</button>
+    <button id="signup-submit" onclick= "gotoLogin()">sign up</button>
+
+    <script type="text/javascript" src = "{% static '/js/buyerAuth.js' %}">
+        
+    </script>
 
 </body>
 </html>

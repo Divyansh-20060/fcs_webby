@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,9 +6,12 @@
 </head>
 <body>
     <h1>Welcome to the ekyc</h1>
-    <form method="post" action="/submitekyc">
-        <button id="login-submit" type="submit">Login</button>
-    </form>
+    
+    <button id="login-submit" onclick= "handleLoginClick()">login</button>
+    
+    <script type="text/javascript" src = "{% static '/js/ekycPage.js' %}">
+        
+    </script>
 
 </body>
 </html>

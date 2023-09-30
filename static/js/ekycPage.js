@@ -1,4 +1,4 @@
-function handleSignupClick() {
+function handleLoginClick() {
     // Change the URL in the address bar
-    window.location.href = '/signupPage';  // Replace with the actual URL of your new page
+    window.location.href = '/mainWelcome';  // Replace with the actual URL of your new page
 }

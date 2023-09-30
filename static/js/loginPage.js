@@ -33,6 +33,7 @@ loginButton.addEventListener('click', function() {
         } else {
             // Login failed
             console.error('Login failed:', responseData.error);
+            alert("incorrect credentials")
             // Display an error message to the user
         }
     })
@@ -46,3 +47,11 @@ function handleSubmitClick() {
     // Change the URL in the address bar
     window.location.href = '/buyerHome';  // Replace with the actual URL of your new page
 }
+
+
+
+// const button = document.getElementById("login-submit")
+// button.addEventListener("click", () => {
+//     console.log("here");
+//     window.location.href = '/mainPage';
+// })

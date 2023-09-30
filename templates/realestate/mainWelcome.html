@@ -7,9 +7,13 @@
 <body>
     <h1>Welcome to the website</h1>
     
-    <button id="toBuyer" >Buyer</button>
-    <button id="toSeller">Seller</button>
-    <button id="toAdmin">Admin</button>
+    <button id="toBuyer" onclick= "buyerWelcome()">Buyer</button>
+    <button id="toSeller" onclick= "sellerWelcome()">Seller</button>
+    <button id="toAdmin" onclick= "adminWelcome()">Admin</button>
+
+    <script type="text/javascript" src = "{% static '/js/mainWelcome.js' %}">
+        
+    </script>
 
 </body>
 </html>

@@ -1,7 +1,6 @@
 import pymongo
 
 def verify_login(username, password):
-    
     client = pymongo.MongoClient("mongodb://localhost:27017/")
     db = client["realestate"]
     collection = db["user_cred"]

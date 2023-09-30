@@ -7,12 +7,50 @@ from .databaseLogic import *
 
 def ekycStart(request):
     return render (request, 'realestate/ekycPage.html')
-    
-def ekycR(request):
-    return redirect (request, 'realestate/ekycPage.html')
 
+########################## Welcome #############
 def mainWelcome(request):
     return render (request,'realestate/mainWelcome.html')
+
+def buyerWelcome(request):
+    return render(request,'realestate/buyerWelcome.html')
+
+def sellerWelcome(request):
+    return render(request,'realestate/sellerWelcome.html')
+
+########################## Signup #############
+def buyerSignup(request):
+    return render(request,'realestate/buyerSignup.html')
+
+def sellersignup(request):
+    return render(request,'realestate/sellerSignup.html')
+
+########################## Login #############
+def adminLogin(request):
+    return render(request,'realestate/adminLogin.html')
+
+def buyerLogin(request):
+    return render(request,'realestate/buyerLogin.html')
+
+def sellerLogin(request):
+    return render(request,'realestate/sellerLogin.html')
+
+
+########################## Home #############
+
+
+def adminHome(request):
+    return render(request,'realestate/adminHome.html')
+
+def buyerHome(request):
+    return render(request,'realestate/adminHome.html')
+
+def sellerHome(request):
+    return render(request,'realestate/sellerHome.html')
+
+
+########################### Legacy ############
+
 
 def welcomePage(request):
     return render (request,'realestate/welcomePage.html')

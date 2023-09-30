@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Login Page</title>
 </head>
 <body>
-    <h1>Login</h1>
+    <h1>Login Admin</h1>
     
     <form>
         <label for="textbox">Enter username:</label>
@@ -16,7 +17,11 @@
         <input type="text" id="password_tb" name="password_tb" placeholder="Type something...">
     </form>
 
-    <button id="login-submit" >login</button>
+    <button id="login-submit" onclick="gotoHome()">login</button>
+
+    <script type="text/javascript" src = "{% static '/js/adminAuth.js' %}">
+        
+    </script>
 
 </body>
 </html>
