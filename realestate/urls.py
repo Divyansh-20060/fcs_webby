@@ -2,7 +2,9 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('',welcomePage,name="index"),
+    path('',ekycStart,name="ekyc page"),
+    path('submitekyc/',ekycR, name= "ekyc redir"),
+    path('mainWelcome',mainWelcome, name= "main welcome"),
     path('loginPage/',loginPage,name="wow"),
     path('signupPage/', signupPage, name = "sign up"),
     path('mainPage', mainPage, name="main page"),

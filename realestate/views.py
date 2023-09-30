@@ -1,9 +1,18 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.template import RequestContext
 import json
 from .databaseLogic import *
+
+def ekycStart(request):
+    return render (request, 'realestate/ekycPage.html')
+    
+def ekycR(request):
+    return redirect (request, 'realestate/ekycPage.html')
+
+def mainWelcome(request):
+    return render (request,'realestate/mainWelcome.html')
 
 def welcomePage(request):
     return render (request,'realestate/welcomePage.html')
