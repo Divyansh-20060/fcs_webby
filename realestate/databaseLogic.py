@@ -16,7 +16,7 @@ def verify_login(username, password, user_type):
         return True
     return False
 
-def signUp_check(name_tb, username, password, user_type, file):
+def signUp_check(name_tb, username, password, user_type):
     client = pymongo.MongoClient("mongodb://localhost:27017/")
     db = client["realestate"]
     collection = db[user_type]

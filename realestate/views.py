@@ -12,28 +12,6 @@ def ekycStart(request):
 def mainWelcome(request):
     return render (request,'realestate/mainWelcome.html')
 
-def buyerWelcome(request):
-    return render(request,'realestate/buyerWelcome.html')
-
-def sellerWelcome(request):
-    return render(request,'realestate/sellerWelcome.html')
-
-########################## Signup #############
-def buyerSignup(request):
-    return render(request,'realestate/buyerSignup.html')
-
-def sellersignup(request):
-    return render(request,'realestate/sellerSignup.html')
-
-########################## Login #############
-def adminLogin(request):
-    return render(request,'realestate/adminLogin.html')
-
-def buyerLogin(request):
-    return render(request,'realestate/buyerLogin.html')
-
-def sellerLogin(request):
-    return render(request,'realestate/sellerLogin.html')
 
 
 ########################## Home #############
@@ -52,8 +30,6 @@ def sellerHome(request):
 ########################### Legacy ############
 
 
-def welcomePage(request):
-    return render (request,'realestate/welcomePage.html')
 
 def loginPage(request):
     return render(request, 'realestate/loginPage.html')
@@ -74,9 +50,6 @@ def showListings(request):
 def purchaseHistory(request):
     return render(request,'realestate/purchaseHistory.html')
 
-def mainPage(request):
-    print("django log:yahoo")
-    return render(request, 'realestate/mainPage.html')
 
 def loginCheck(request):
     
