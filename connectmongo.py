@@ -9,6 +9,7 @@ if __name__ == "__main__":
     
     collection = db["user_cred"]
     
-    collection.insert_one({"uname": "root","password": "root"})
+    # collection.insert_one({"uname": "root","password": "root"})
+    # collection.insert_one({"uname": "sth", "password": "sthsth", "fileTitle": "filname"})
 
     client.close()

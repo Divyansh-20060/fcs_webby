@@ -1,16 +1,15 @@
-// Assuming you have a button with ID "login-button"
-const loginButton = document.getElementById('login-submit');
 
-// Add a click event listener to the button
-loginButton.addEventListener('click', function() {
+function gotoHome() {
+
     // Get the values from the username and password text boxes
     const username = document.getElementById('username_tb').value;
     const password = document.getElementById('password_tb').value;
-
+    const user_type = document.getElementById('dropdown').value;
     // Create a data object to send to the server
     const data = {
         username: username,
-        password: password
+        password: password,
+        user_type: user_type,
     };
 
     // Send a POST request to the server with the login data
@@ -28,12 +27,20 @@ loginButton.addEventListener('click', function() {
             // Login was successful
             // You can do client-side work here
             console.log('Login successful');
-            handleSubmitClick()
+            if (user_type == "buyer"){
+                window.location.href = '/buyerHome';  // Replace with the actual URL of your new page
+            }
+            if (user_type == "seller"){
+                window.location.href = '/sellerHome';  // Replace with the actual URL of your new page
+            }
+            if (user_type == "admin"){
+                window.location.href = '/adminHome';  // Replace with the actual URL of your new page
+            }
             // Redirect to a new page, show a success message, etc.
         } else {
             // Login failed
             console.error('Login failed:', responseData.error);
-            alert("incorrect credentials")
+            alert("incorrect credentials");
             // Display an error message to the user
         }
     })
@@ -41,17 +48,4 @@ loginButton.addEventListener('click', function() {
         // Handle any errors that occurred during the fetch
         console.error('Fetch error:', error);
     });
-});
-
-function handleSubmitClick() {
-    // Change the URL in the address bar
-    window.location.href = '/buyerHome';  // Replace with the actual URL of your new page
 }
-
-
-
-// const button = document.getElementById("login-submit")
-// button.addEventListener("click", () => {
-//     console.log("here");
-//     window.location.href = '/mainPage';
-// })

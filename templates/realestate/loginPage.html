@@ -2,22 +2,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login Page</title>
+    <title>Welcome</title>
 </head>
 <body>
-    <h1>Login</h1>
+    <h1>Login Page</h1>
     
     <form>
-        <label for="textbox">Enter username:</label>
-        <input type="text" id="username_tb" name="username_tb" placeholder="Type something...">
-    </form>
+        <div class = "form-group">
+            <label for="textbox">Enter username:</label>
+            <input type="text" id="username_tb" name="username_tb" placeholder="Type something...">
+        </div>
 
-    <form>
-        <label for="textbox">Enter password:</label>
-        <input type="text" id="password_tb" name="password_tb" placeholder="Type something...">
-    </form>
+        <div class = "form-group">
+            <label for="textbox">Enter password:</label>
+            <input type="text" id="password_tb" name="password_tb" placeholder="Type something...">
+        </div>
 
-    <button id="login-submit" >login</button>
+        <div class = "form-group">
+            <label for="dropdown">Select the user type:</label>
+            <select id="dropdown" name="user_type">
+                <option value="buyer">buyer</option>
+                <option value="seller">seller</option>
+                <option value="admin">admin</option>
+            </select>
+        </div>
+
+        <button id="login-submit" onclick= "gotoHome()">login</button>
+    </form>
 
     <script type="text/javascript" src = "{% static '/js/loginPage.js' %}">
         

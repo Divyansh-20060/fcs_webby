@@ -90,9 +90,10 @@ def loginCheck(request):
         # Extract the username and password from the data
         username = data.get('username', '')
         password = data.get('password', '')
+        user_type = data.get('user_type', '')
 
 
-        verdict = verify_login(username,password)
+        verdict = verify_login(username,password, user_type)
 
 
         # Compare the provided credentials to the fixed credentials
@@ -107,3 +108,34 @@ def loginCheck(request):
 
     # Handle other HTTP methods if needed
     return JsonResponse({'error': 'Invalid request method'})
+
+def signupCheck(request):
+
+    if request.method == 'POST':
+        # Parse the JSON data from the request
+        data = json.loads(request.body)
+
+        print(data)
+        # Extract the username and password from the data
+        name_tb = data.get('name_tb', '')
+        username = data.get('username', '')
+        password = data.get('password', '')
+        user_type = data.get('user_type', '')
+        file = data.get('file', '')
+        
+        verdict = signUp_check(name_tb,username, password, user_type, file)
+
+
+        # Compare the provided credentials to the fixed credentials
+        if verdict == True:
+            # Credentials match
+            response_data = {'success': True, 'message': 'Signup successful'}
+        else:
+            # Credentials do not match
+            response_data = {'success': False, 'error': 'user already exist'}
+
+        return JsonResponse(response_data)
+    # Handle other HTTP methods if needed
+    return JsonResponse({'error': 'Invalid request method'})
+
+

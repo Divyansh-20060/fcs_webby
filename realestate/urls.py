@@ -26,6 +26,7 @@ urlpatterns = [
     path('signupPage/', signupPage, name = "sign up"),
     path('mainPage', mainPage, name="main page"),
     path('loginCheck/',loginCheck,name="loginCheck"),
+    path('signupCheck/', signupCheck, name = "signupCheck"),
     path('buyerHome/',buyerHome,name="Home"),
     path('showListings/',showListings,name="showListings"),
     path('buyerProfile/',buyerProfile,name="Profile"),
