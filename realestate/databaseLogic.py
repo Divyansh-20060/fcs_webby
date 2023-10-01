@@ -5,7 +5,7 @@ def verify_login(username, password, user_type):
     db = client["realestate"]
 
     collection = db[user_type]
-    
+
     matches = collection.count_documents({"uname": username, "password": password})
     
     client.close()
@@ -27,6 +27,7 @@ def signUp_check(name_tb, username, password, user_type, file):
         client.close()
         return False
     ##Insert the entry into the database
-    collection.insert_one({"name_tb": name_tb, "uname":username, "password":password, "identity_doc": file})
+    # file_data = file.read()
+    collection.insert_one({"name_tb": name_tb, "uname":username, "password":password})
     client.close()
     return True
