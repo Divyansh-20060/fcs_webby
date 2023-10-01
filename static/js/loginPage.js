@@ -1,4 +1,6 @@
 
+
+
 function gotoHome() {
 
     // Get the values from the username and password text boxes

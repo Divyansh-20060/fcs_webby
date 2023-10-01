@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -8,45 +7,42 @@
 <body>
     <h1>Sign up</h1>
 
-    <form>
-        <div>
-            <label for="textbox">Enter Name:</label>
-            <input type="text" id="name_tb" name="name_tb" placeholder="Type something...">
-        </div>
+    <form id = "getstuff">
+        <nav>
+        <label for="textbox">Enter Name:</label>
+        <input type="text" id="name_tb" name="name_tb" placeholder="Type something..."> 
+        </nav>
 
-        <div>
-            <label for="textbox">Enter username:</label>
-            <input type="text" id="username_tb" name="username_tb" placeholder="Type something...">
-        </div>
+        <nav>
+        <label for="textbox">Enter username:</label>
+        <input type="text" id="username_tb" name="username_tb" placeholder="Type something..."> 
+        </nav>
 
-        <div>
-            <label for="textbox">Enter password:</label>
-            <input type="text" id="password_tb" name="password_tb" placeholder="Type something...">
-        </div>
 
-        <div>
-            <label for="textbox">Enter Public key:</label>
-            <input type="text" id="public_key" name="public_key" placeholder="Type something...">
-        </div>
+        <nav>
+        <label for="textbox">Enter password:</label>
+        <input type="text" id="password_tb" name="password_tb" placeholder="Type something..."> 
+        </nav>
 
-        <div>
-            <label for="upload_file"> Upload Signed Document:</label>
-            <input type="file" id="file-input" name="file"/>
-        </div>
+        <nav>
+        <label for="textbox">Enter Public key:</label>
+        <input type="text" id="public_key" name="public_key" placeholder="Type something..."> 
+        </nav>
 
-        <div class = "form-group">
-            <label for="dropdown">Select The User Type:</label>
-            <select id="dropdown" name="user_type">
-                <option value="buyer">buyer</option>
-                <option value="seller">seller</option>
-            </select>
-        </div>
-        <button id="signup-submit" onclick= "handleSignupClick()">sign up</button>
+        <nav>
+        <label for="upload_file"> Upload Signed Document:</label>
+        <input type="file" id="file-input" name="file"/> 
+        </nav>
 
+        <nav>
+        <label for="dropdown">Select The User Type:</label>
+        <select id="dropdown" name="user_type">
+            <option value="buyer">buyer</option>
+            <option value="seller">seller</option>
+        </select>
+        </nav>   
     </form>
-
-            
-
+    <button id="signup-submit" onclick= "handleSignupClick()">sign up</button>
 
 
     <script type="text/javascript" src = "{% static '/js/signupPage.js' %}">
