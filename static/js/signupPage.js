@@ -9,7 +9,7 @@ function handleSignupClick() {
     .then(response => response.json())
     .then(responseData => {
         if (responseData.success){
-            alert("signed up successfully");
+            alert("signed up successfully, deez nuts");
             console.log('Signup successful');
             window.location.href = '/loginPage'; 
         } else{
