@@ -1,6 +1,8 @@
-function handleSignupClick() {
-    // Change the URL in the address bar
+const btn = document.getElementById("signup-submit");
 
+btn.addEventListener(("click"), handleSignupClick);
+
+function handleSignupClick() {
     alert("something happened");
 
     const form = document.getElementById("getstuff");
