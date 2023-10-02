@@ -7,8 +7,16 @@ if __name__ == "__main__":
     
     db = client["realestate"]
     
-    collection = db["user_cred"]
+    collection = db["admin"]
     
+    data = {
+        "name":"shahzan",
+        "dict": {
+            "realname": "sneider",
+            "fakename": "drzkae",
+        }
+    }
+    collection.insert_one(data)
     # collection.insert_one({"uname": "root","password": "root"})
     # collection.insert_one({"uname": "sth", "password": "sthsth", "fileTitle": "filname"})
 

@@ -9,45 +9,45 @@
 
     <form id = "getstuff">
         <nav>
-        <label for="textbox">Enter Name:</label>
+        <label for="name_tb">Enter Name:</label>
         <input type="text" id="name_tb" name="name_tb" placeholder="Type something..."> 
         </nav>
 
         <nav>
-        <label for="textbox">Enter username:</label>
+        <label for="username_tb">Enter username:</label>
         <input type="text" id="username_tb" name="username_tb" placeholder="Type something..."> 
         </nav>
 
 
         <nav>
-        <label for="textbox">Enter password:</label>
+        <label for="password_tb">Enter password:</label>
         <input type="text" id="password_tb" name="password_tb" placeholder="Type something..."> 
         </nav>
 
         <nav>
-        <label for="textbox">Enter Public key:</label>
-        <input type="text" id="public_key" name="public_key" placeholder="Type something..."> 
+        <label for="public_key">Upload public key file</label>
+        <input type="file" id="public_key" name="public_key"> 
         </nav>
 
         <nav>
-        <label for="upload_file"> Upload Signed Document:</label>
-        <input type="file" id="file-input" name="file"/> 
+        <label for="proof_of_id"> Upload Signed Proof of ID in pdf</label>
+        <input type="file" id="proof_of_id" name="proof_of_id" /> 
         </nav>
 
         <nav>
-        <label for="dropdown">Select The User Type:</label>
-        <select id="dropdown" name="user_type">
+        <label for="user_type">Select The User Type:</label>
+        <select id="user_type" name="user_type">
             <option value="buyer">buyer</option>
             <option value="seller">seller</option>
         </select>
         </nav>   
     </form>
-    <button id="signup-submit" onclick= "handleSignupClick()">sign up</button>
+
+    <script type="text/javascript" src = "{% static '/js/signupPage.js' %}"></script>
+    <button id="signup-submit" onclick="handleSignupClick()">sign up</button>
 
 
-    <script type="text/javascript" src = "{% static '/js/signupPage.js' %}">
-        
-    </script>
+
 
 </body>
 </html>

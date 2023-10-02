@@ -7,30 +7,14 @@ from .databaseLogic import *
 from realestate.models import Document
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-# from .forms import ModelWithFileField
 
-def test_upload_file(request):
-    return render (request, 'realestate/test_upload_file.html')
 
-def upload(request):
-    if request.method == "POST":
-        # form = ModelFormWithFileField(request.POST, request.FILES)
-
-        username = request.POST.get("username")
-        title = request.POST.get("title")
-        # file = request.POST.get("file")
-        obj = Document(username = username, title = title)
-        obj.save()
-        # instance = ModelWithFileField(file_field=request.FILES["file"])
-        # instance.save()
-    return render (request, 'realestate/test_upload_file.html')
 def ekycStart(request):
     return render (request, 'realestate/ekycPage.html')
 
 ########################## Welcome #############
 def mainWelcome(request):
     return render (request,'realestate/mainWelcome.html')
-
 
 
 ########################## Home #############
@@ -57,7 +41,7 @@ def signupPage(request):
     return render(request, 'realestate/signupPage.html')
 
 def buyerHome(request):
-    print("django log: great success wow")
+    # print("django log: great success wow")
     return render(request,'realestate/buyerHome.html')
 
 def buyerProfile(request):
@@ -71,107 +55,81 @@ def purchaseHistory(request):
 
 
 def loginCheck(request):
-    
-    
-    if request.method == 'POST':
+    if request.method == "POST":
         # # Parse the JSON data from the request
         data = json.loads(request.body)
 
-        # print(data)
-        # Extract the username and password from the data
+        # # print(data)
+        # # Extract the username and password from the data
         username = data.get('username', '')
         password = data.get('password', '')
         user_type = data.get('user_type', '')
 
-        verdict = verify_login(username,password, user_type)
+        verdict = verify_login(username, password, user_type)
 
 
         # Compare the provided credentials to the fixed credentials
         if verdict == True:
             # Credentials match
             response_data = {'success': True, 'message': 'Login successful'}
+            return JsonResponse(response_data)
         else:
             # Credentials do not match
             response_data = {'success': False, 'error': 'Invalid username or password'}
-
-        return JsonResponse(response_data)
+            return JsonResponse(response_data)
 
     # Handle other HTTP methods if needed
-    return JsonResponse({'error': 'Invalid request method'})
+    return JsonResponse({'error': 'Invalid request method'}, satus = 400)
+
 
 def signupCheck(request):
 
-    if request.method == 'POST':
-        # Parse the JSON data from the request
-        data = json.loads(request.body)
-
-        print(data)
-        # Extract the username and password from the data
-        name_tb = data.get('name_tb', '')
-        username = data.get('username', '')
-        password = data.get('password', '')
-        user_type = data.get('user_type', '')
-        # file = data.get('file', '')
+    if request.method == "POST":
+        name = request.POST.get("name_tb")
+        username = request.POST.get("username_tb")
+        password = request.POST.get("password_tb")
+        user_type = request.POST.get("user_type")
+        public_key = request.FILES.get("public_key")
+        proof_of_id = request.FILES.get("proof_of_id")
         
-        verdict = signUp_check(name_tb,username, password, user_type)
+        public_key_data = public_key.read().hex()
+        proof_of_id_data = proof_of_id.read().hex()
+        file = {
+            "name":name,
+            "uname": username,
+            "password": password,
+            "user_type": user_type,
+            "public_key": {
+                
+                "name": public_key.name,
+                "data": public_key_data,
+                "content_type": public_key.content_type   
+            },
 
+            "proof_of_id": {
+
+                "name": proof_of_id.name,
+                "data": proof_of_id_data,
+                "content_type": proof_of_id.content_type   
+            }
+        }
+           
+        
 
         # Compare the provided credentials to the fixed credentials
-        if verdict == True:
+        if verdict == signUp_check(file, username):
             # Credentials match
             response_data = {'success': True, 'message': 'Signup successful'}
+            # response_data = ({'success': True,
+            #                   "message": "sign up successful"})
+            return JsonResponse(response_data)
         else:
             # Credentials do not match
             response_data = {'success': False, 'error': 'user already exist'}
+            # response_data = ({"message": "sign up failed"})
+            return JsonResponse(response_data)
 
-        return JsonResponse(response_data)
     # Handle other HTTP methods if needed
-    return JsonResponse({'error': 'Invalid request method'})
-
-
-def upload_pdf(request):
-    if request.method == "POST":
-        # Perform operations on the PDF file here
-        # You can use libraries like PyPDF2 or pdfplumber to work with PDFs
-
-        # For example, you can extract text from the PDF
-        # import PyPDF2
-        # pdf = PyPDF2.PdfFileReader(pdf_file)
-        # text = ""
-        # for page in range(pdf.getNumPages()):
-        #     text += pdf.getPage(page).extractText()
-
-        # print("django log: ")
-        # print('-------------------------------')
-        # name = request.POST.get("name_tb")
-        # username = request.POST.get("username_tb")
-        # password = request.POST.get("password_tb")
-        # public_key = request.POST.get("public_key")
-        # user_type = request.POST.get("user_type")
-        uploaded_file = request.FILES.get("file")
-        
-        if uploaded_file:
-            mongoupload(uploaded_file)
-            # Process the uploaded file here
-            # Save it in the same directory as your Django project
-            # with open(f'my_uploaded_file.pdf', 'wb') as destination:
-            #     for chunk in uploaded_file.chunks():
-            #         destination.write(chunk)
-
-        
-        
-        # print(name)
-        # print(username)
-        # print(password)
-        # print(public_key)
-        # print(user_type)
-        
-        #print(pdf_file)
-        
-        # Return some response
-        return JsonResponse({"message": "PDF file uploaded and processed successfully."})
-
-    return JsonResponse({"message": "Invalid request."}, status=400)
-
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
