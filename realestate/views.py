@@ -115,21 +115,17 @@ def signupCheck(request):
         }
            
         
-
+        verdict = signUp_check(file, username)
         # Compare the provided credentials to the fixed credentials
-        if verdict == signUp_check(file, username):
+        if verdict == True:
             # Credentials match
             response_data = {'success': True, 'message': 'Signup successful'}
-            # response_data = ({'success': True,
-            #                   "message": "sign up successful"})
+
             return JsonResponse(response_data)
         else:
             # Credentials do not match
             response_data = {'success': False, 'error': 'user already exist'}
-            # response_data = ({"message": "sign up failed"})
             return JsonResponse(response_data)
 
     # Handle other HTTP methods if needed
     return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-
