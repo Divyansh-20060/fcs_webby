@@ -26,5 +26,6 @@ urlpatterns = [
     path('showListings/',showListings,name="showListings"),
     path('buyerProfile/',buyerProfile,name="Profile"),
     path('purchaseHistory/',purchaseHistory,name="Purchases"),
+    path('sellerProfile/', sellerProfile, name = "sellerProfile"),
     
 ]

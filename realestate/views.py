@@ -129,3 +129,6 @@ def signupCheck(request):
 
     # Handle other HTTP methods if needed
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def sellerProfile(request):
+    return render (request, 'realestate/sellerProfile.html')
