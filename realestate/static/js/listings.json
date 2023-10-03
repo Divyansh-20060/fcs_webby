@@ -1,0 +1,30 @@
+[
+    {
+        "sellerName": "Seller 1",
+        "sellerUsername": "seller1",
+        "listings": [
+            {
+                "title": "Listing 1",
+                "description": "Description 1"
+            },
+            {
+                "title": "Listing 2",
+                "description": "Description 2"
+            }
+        ]
+    },
+    {
+        "sellerName": "Seller 2",
+        "sellerUsername": "seller2",
+        "listings": [
+            {
+                "title": "Listing 3",
+                "description": "Description 3"
+            },
+            {
+                "title": "Listing 4",
+                "description": "Description 4"
+            }
+        ]
+    }
+]

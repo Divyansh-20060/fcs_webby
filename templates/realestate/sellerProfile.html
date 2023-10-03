@@ -5,11 +5,18 @@
 <head>
     <title>Document</title>
 </head>
-<body></body>
-    <h2 id = "username:"> Seller Username: </h2>
-    <h2 id = "uname:">   Seller uname:  </h2>
-    <script type="text/javascript" src = "{% static '/js/sellerProfile.js' %}"></script>
+<body>
+    <section>
+        <h2 id = "username"> Seller Name: </h2>
+        <h2 id = "uname">   Seller Username:  </h2>
+    </section>
 
+    <section>
+        <h2>Listings Posted</h2>
+        <button id="viewListingsButton" onclick="viewListings()"> View Listings</button>
+    </section>
+
+    <script type="text/javascript" src = "{% static '/js/sellerProfile.js' %}"></script>
 
 </body>
 </html>

@@ -132,3 +132,12 @@ def signupCheck(request):
 
 def sellerProfile(request):
     return render (request, 'realestate/sellerProfile.html')
+
+def queryDb(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        uname = data.get('uname', '')
+        user_type = data.get('user_type', '')
+        request = data.get('request', '')
+        ##bring data from db
+        

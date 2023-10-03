@@ -27,5 +27,6 @@ urlpatterns = [
     path('buyerProfile/',buyerProfile,name="Profile"),
     path('purchaseHistory/',purchaseHistory,name="Purchases"),
     path('sellerProfile/', sellerProfile, name = "sellerProfile"),
+    path('queryDb/', queryDb, name = "queryDb")
     
 ]
