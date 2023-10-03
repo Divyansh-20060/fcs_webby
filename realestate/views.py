@@ -82,6 +82,24 @@ def loginCheck(request):
     return JsonResponse({'error': 'Invalid request method'}, satus = 400)
 
 
+
+
+# public_key_data = public_key.read().hex()
+# proof_of_id_data = proof_of_id.read().hex()
+
+# "public_key": {
+    
+#     "name": public_key.name,
+#     "data": public_key_data,
+#     "content_type": public_key.content_type   
+# },
+
+# "proof_of_id": {
+
+#     "name": proof_of_id.name,
+#     "data": proof_of_id_data,
+#     "content_type": proof_of_id.content_type   
+# }
 def signupCheck(request):
 
     if request.method == "POST":
@@ -92,35 +110,25 @@ def signupCheck(request):
         public_key = request.FILES.get("public_key")
         proof_of_id = request.FILES.get("proof_of_id")
         
-        public_key_data = public_key.read().hex()
-        proof_of_id_data = proof_of_id.read().hex()
+        # public_key_path = "/realestate/static/public_keys/" + username + "_" + user_type + ".pem"
+        # proof_of_id_path = "/realestate/static/identity_docs/" + username + "_" + user_type + ".pdf"
+        public_key_path = "/static/public_keys/" + username + "_" + user_type + ".pem"
+        proof_of_id_path = "/static/identity_docs/" + username + "_" + user_type + ".pdf"
         file = {
             "name":name,
             "uname": username,
             "password": password,
             "user_type": user_type,
-            "public_key": {
-                
-                "name": public_key.name,
-                "data": public_key_data,
-                "content_type": public_key.content_type   
-            },
-
-            "proof_of_id": {
-
-                "name": proof_of_id.name,
-                "data": proof_of_id_data,
-                "content_type": proof_of_id.content_type   
-            }
+            "public_key_path": public_key_path,
+            "proof_of_id_path": proof_of_id_path
         }
            
         
-        verdict = signUp_check(file, username)
+        verdict = signUp_check(file, public_key, proof_of_id)
         # Compare the provided credentials to the fixed credentials
         if verdict == True:
             # Credentials match
             response_data = {'success': True, 'message': 'Signup successful'}
-
             return JsonResponse(response_data)
         else:
             # Credentials do not match
@@ -138,6 +146,9 @@ def queryDb(request):
         data = json.loads(request.body)
         uname = data.get('uname', '')
         user_type = data.get('user_type', '')
-        request = data.get('request', '')
+        requested = data.get('requested', '')
         ##bring data from db
-        
+        ans = dbQuery(uname, user_type, requested)
+        return JsonResponse(ans)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+

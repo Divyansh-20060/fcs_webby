@@ -1,3 +1,4 @@
+// for seller
 document.addEventListener("DOMContentLoaded", function () {
     // Fetch the JSON data from listings.json
     fetch("listings.json")

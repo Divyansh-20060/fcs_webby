@@ -7,7 +7,7 @@
 </head>
 <body>
     <section>
-        <h2 id = "username"> Seller Name: </h2>
+        <h2 id = "name"> Seller Name: </h2>
         <h2 id = "uname">   Seller Username:  </h2>
     </section>
 
@@ -16,6 +16,13 @@
         <button id="viewListingsButton" onclick="viewListings()"> View Listings</button>
     </section>
 
+    <!-- <a href="/realestate/static/js/sellerProfile.js" download> <button> Download PDF </button> </a> -->
+    <section>
+    <a id = "download_id" href="" download> <button> Download identity proof </button> </a>
+    </section>
+    <section>
+    <a id = "download_pub_key" href="" download> <button> Download Public Key </button> </a>
+    </section>
     <script type="text/javascript" src = "{% static '/js/sellerProfile.js' %}"></script>
 
 </body>

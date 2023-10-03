@@ -4,12 +4,14 @@
         "sellerUsername": "seller1",
         "listings": [
             {
-                "title": "Listing 1",
-                "description": "Description 1"
+                "title": "Property Eastside",
+                "description": "Description 1",
+                "buyerRequests": []
             },
             {
                 "title": "Listing 2",
-                "description": "Description 2"
+                "description": "Description 2",
+                "buyerRequests": []
             }
         ]
     },
@@ -19,11 +21,13 @@
         "listings": [
             {
                 "title": "Listing 3",
-                "description": "Description 3"
+                "description": "Description 3",
+                "buyerRequests": []
             },
             {
                 "title": "Listing 4",
-                "description": "Description 4"
+                "description": "Description 4",
+                "buyerRequests": []
             }
         ]
     }

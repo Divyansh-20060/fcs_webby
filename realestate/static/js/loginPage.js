@@ -26,6 +26,7 @@ function gotoHome() {
             // Login was successful
             // You can do client-side work here
             localStorage.setItem("uname", username);
+            localStorage.setItem("user_type", user_type);
             console.log('Login successful');
             if (user_type == "buyer"){
                 window.location.href = '/buyerHome';  // Replace with the actual URL of your new page
