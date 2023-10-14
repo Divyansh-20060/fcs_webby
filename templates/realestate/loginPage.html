@@ -7,32 +7,39 @@
 <body>
     <h1>Login Page</h1>
     
-    <form id = "form_id">
-        <div class = "form-group">
-            <label for="textbox">Enter username:</label>
-            <input type="text" id="username_tb" name="username_tb" placeholder="Type something...">
-        </div>
+    {% for message in messages %}
+    <div class="alert" role = "alert">
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
+    
+    <form method="post" enctype="multipart/form-data">
 
-        <div class = "form-group">
-            <label for="textbox">Enter password:</label>
-            <input type="text" id="password_tb" name="password_tb" placeholder="Type something...">
-        </div>
+        {% csrf_token %}
 
-        <div class = "form-group">
-            <label for="dropdown">Select the user type:</label>
-            <select id="dropdown" name="user_type">
+        <p>
+            <label for="username">Enter username:</label>
+            <input type="text" id="username" name="username" placeholder="Type something..." required> 
+        </p>
+    
+    
+        <p>
+            <label for="password">Enter password:</label>
+            <input type="password" id="password" name="password" placeholder="Type something..." required> 
+        </p>
+
+        <p>
+            <label for="user_type">Select The User Type:</label>
+            <select id="user_type" name="user_type">
                 <option value="buyer">buyer</option>
                 <option value="seller">seller</option>
                 <option value="admin">admin</option>
             </select>
-        </div>
+        </p>
+
+        <button type="submit">Log In</button>
 
     </form>
-
-    <button id="login-submit" onclick= "gotoHome()">login</button>
-    <script type="text/javascript" src = "{% static '/js/loginPage.js' %}">
-        
-    </script>
 
 </body>
 </html>

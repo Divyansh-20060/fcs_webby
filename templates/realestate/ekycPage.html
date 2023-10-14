@@ -7,12 +7,11 @@
 <body>
     <h1>Welcome to the ekyc</h1>
     
-    <button id="login-submit" onclick= "handleLoginClick()">login</button>
-    
-    <script type="text/javascript" src = "{% static '/js/ekycPage.js' %}">
-        
-    </script>
+    <form action="{% url 'main welcome' %}" method="get">
+        <button type="submit">Redirect</button>
+    </form>
+    <!-- <a href="/media/proofIDs/file.pdf" download="my_document.pdf">Download PDF</a> -->
+
 
 </body>
 </html>
-

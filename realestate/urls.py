@@ -4,8 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
-
-
 ##temporary just for testing
 urlpatterns = [
     path('',ekycStart,name="ekyc page"),
@@ -16,17 +14,13 @@ urlpatterns = [
     path('buyerHome/',buyerHome,name="buyer home"),
     path('sellerHome/',sellerHome,name="seller home"),
 
-    path('loginPage/',loginPage,name="wow"),
-    path('signupPage/', signupPage, name = "sign up"),
-
-    path('signupCheck/', signupCheck, name = "signupCheck"),
-    path('loginCheck/',loginCheck,name="loginCheck"),
+    path('loginPage/',loginPage,name="login page"),
+    path('signupPage/', signupPage, name = "sign up page"),
 
 
     path('showListings/',showListings,name="showListings"),
     path('buyerProfile/',buyerProfile,name="Profile"),
     path('purchaseHistory/',purchaseHistory,name="Purchases"),
     path('sellerProfile/', sellerProfile, name = "sellerProfile"),
-    path('queryDb/', queryDb, name = "queryDb")
     
 ]

@@ -7,11 +7,17 @@
 <body>
     <h1>Welcome to the website</h1>
 
-    <button id = login_button onclick= "move_to_login()"> Login </button>
-    <button id = signup_button onclick= "move_to_signup()"> Sign Up </button>
-    <script type="text/javascript" src = "{% static '/js/mainWelcome.js' %}">
-        
-    </script>
+    <p>
+        <form action="{% url 'login page' %}" method="get">
+            <button type="submit">log in</button>
+        </form>
+    </p>
+
+    <p>
+        <form action="{% url 'sign up page' %}" method="get">
+            <button type="submit">sign up</button>
+        </form>
+    </p>
 
 </body>
 </html>
