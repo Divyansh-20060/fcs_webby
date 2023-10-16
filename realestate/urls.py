@@ -9,6 +9,8 @@ urlpatterns = [
     path('',ekycStart,name="ekyc page"),
     path('mainWelcome/',mainWelcome,name="main welcome"),
 
+    path('emailVerify/',emailVerifyPage,name="email verify"),
+    path('otpVerify/', otpPage, name= "otp verify"),
 
     path('adminHome/',adminHome,name="admin home"),
     path('buyerHome/',buyerHome,name="buyer home"),
