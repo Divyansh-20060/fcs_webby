@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+</head>
+<body>
+
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
+        <strong{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</strong>
+    </div>
+    {% endfor %}
+
+    <h1>User Profile</h1>
+    <p><strong>Name:</strong> {{ user_info.name }}</p>
+    <p><strong>Username:</strong> {{ user_info.username }}</p>
+    <p><strong>Email:</strong> {{ user_info.email }}</p>
+    
+    <p><strong>Public Key:</strong></p>
+    <a href="{{ user_info.public_key.url }}">Download Public Key</a>
+
+    <p><strong>Proof of ID:</strong></p>
+    <a href="{{ user_info.proof_of_id.url }}">Download Proof of ID</a>
+
+    <p>
+        <strong>update email</strong>
+        <form action="{% url 'email verify' %}" method="get">
+            <button type="submit">update email</button>
+        </form>
+    </p>
+    
+    <p>
+        <strong>update password</strong>
+        <form action="{% url 'update password' %}" method="get">
+            <button type="submit">update password</button>
+        </form>
+    </p>
+
+    <p>
+        <strong>update name or proof of id</strong>
+        <form action="{% url 'update Name POI' %}" method="get">
+            <button type="submit">update name or POI</button>
+        </form>
+    </p>
+
+</body>
+</html>

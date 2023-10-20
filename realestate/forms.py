@@ -14,3 +14,8 @@ class LoginForm(forms.Form):
     username = forms.CharField(max_length=50)
     password = forms.CharField(max_length=200)
     user_type = forms.CharField(max_length=200)
+    
+class PasswordForm(forms.Form):
+    old_password = forms.CharField(max_length=200)
+    new_password = forms.CharField(max_length=200)
+    confirm_new_password = forms.CharField(max_length=200)

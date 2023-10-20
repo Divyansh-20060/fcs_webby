@@ -5,6 +5,7 @@ class SellerInfo(models.Model):
     name = models.CharField(max_length=50)
     username = models.CharField(max_length=50, primary_key=True)
     password = models.CharField(max_length=200)
+    salt = models.CharField(max_length=200, null = True)
     public_key = models.FileField(upload_to='publicKeys/')
     proof_of_id = models.FileField(upload_to='proofIDs/')
     email = models.CharField(max_length=50, default="strings")
@@ -15,6 +16,7 @@ class BuyerInfo(models.Model):
     name = models.CharField(max_length=50)
     username = models.CharField(max_length=50,primary_key=True)
     password = models.CharField(max_length=200)
+    salt = models.CharField(max_length=200, null = True)
     public_key = models.FileField(upload_to='public_keys/')
     proof_of_id = models.FileField(upload_to='proofIDs/')
     email = models.CharField(max_length=50)
@@ -24,4 +26,5 @@ class AdminInfo(models.Model):
     name = models.CharField(max_length=50)
     username = models.CharField(max_length=50, primary_key=True)
     password = models.CharField(max_length=200)
+    salt = models.CharField(max_length=200,null = True)
     
