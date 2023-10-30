@@ -5,7 +5,6 @@
     <title>Welcome</title>
 </head>
 <body>
-    <h1>Welcome Seller!</h1>
 
     {% for message in messages %}
     <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
@@ -13,13 +12,30 @@
     </div>
     {% endfor %}
     
+    <h1>Welcome Seller!</h1>
+
+    
     <p>
-        <h1>View or Edit profile</h1>
-        <form action="{% url 'user Profile' %}" method="get">
-            <button type="submit">log in</button>
+        <h1>Create a new Listing</h1>
+        <form action="{% url 'create listing' %}" method="get">
+            <button type="submit">Create Listing</button>
         </form>
     </p>
 
+    <p>
+        <h1>View or Edit profile</h1>
+        <form action="{% url 'user Profile' %}" method="get">
+            <button type="submit">view</button>
+        </form>
+    </p>
+
+    <p>
+        <h1>View Listings</h1>
+        <form action="{% url 'view seller listings' %}" method="get">
+            <button type="submit">view</button>
+        </form>
+        <!-- <a href="{% url 'view seller listings' %}">View Seller Info</a> -->
+    </p>
 
 </body>
 </html>

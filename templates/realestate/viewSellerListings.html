@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seller Info</title>
+</head>
+<body>
+    <h1>Seller Listings</h1>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px; /* Add margin for spacing */
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px; /* Add padding for spacing */
+        }
+    </style>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>typePropety</th>
+                <th>seller</th>
+                <th>buyer</th>
+                <th>status</th>
+                <th>date</th>
+                <th>amenity</th>
+                <th>budget</th>
+                <th>locality</th>
+                <th>typeContract</th>
+                <th>malicious</th>
+                <th>ownershipDoc</th>
+                <th>identityDoc</th>
+                <th>saleContract</th>
+                <th>rentalContract_buyer</th>
+                <th>rentalContract_seller</th>
+                <th>Edit listing</th>
+                <th>Delete listing</th>
+
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for info in seller_info %}
+                <tr>
+                    <td>{{ info.ID }} </td>
+                    <td>{{ info.typePropety }}</td>
+                    <td>{{ info.seller }}</td>
+                    <td>{{ info.buyer }}</td>
+                    <td>{{ info.status }}</td>
+                    <td>{{ info.date }}</td>
+                    <td>{{ info.amenity }}</td>
+                    <td>{{ info.budget }}</td>
+                    <td>{{ info.locality }}</td>
+                    <td>{{ info.typeContract }}</td>
+                    <td>{{ info.malicious }}</td>
+                    <td>
+                        {% if info.ownershipDoc %}
+                            <a href="{{ info.ownershipDoc.url }}" download>Download File</a>
+                        {% else %}
+                            No file available
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.identityDoc %}
+                            <a href="{{ info.identityDoc.url }}" download>Download File</a>
+                        {% else %}
+                            No file available
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.saleContract %}
+                            <a href="{{ info.saleContract.url }}" download>Download File</a>
+                        {% else %}
+                            No file available
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.rentalContract_buyer %}
+                            <a href="{{ info.rentalContract_buyer.url }}" download>Download File</a>
+                        {% else %}
+                            No file available
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.rentalContract_seller %}
+                            <a href="{{ info.rentalContract_seller.url }}" download>Download File</a>
+                        {% else %}
+                            No file available
+                        {% endif %}
+                    </td>
+                    <!--edit button-->
+                    <td>
+                        <a href="{% url 'edit_listing' info.ID %}">Edit Listing</a>
+                    </td>
+                    <td>
+                        <a href="{% url 'delete_listing' info.ID %}">Delete Listing</a>
+                    </td>
+
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="16">No seller info found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+
+
+
+
+
+
+

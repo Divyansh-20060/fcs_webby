@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Listings</title>
+</head>
+<body>
+    
+    <h1>Create a new listing</h1>
+
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
+        <strong{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</strong>
+    </div>
+    {% endfor %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.as_p }} 
+        
+        <button type="submit">Create Listing</button>
+    </form>
+    <!-- <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <p>
+            <label for="type_property">Select type of property:</label>
+            <select id="type_property" name="type_property">
+
+                <option value="residential">residential</option>
+                <option value="commercial">commercial</option>
+                <option value="appartment">appartment</option>
+                <option value="industrial">industrial</option>
+
+            </select>
+        </p>
+
+        <p>
+            <label for="date">Select date of avablity:</label>
+            <input type="date" id="date" name="date"  required>
+        </p>
+
+        <p>
+            <label for="amenities">Select amenities:</label>
+            <select id="amenities" name="amenities">
+
+                <option value="security">security</option>
+                <option value="clubhouse">clubhouse</option>
+                <option value="parking">parking</option>
+                <option value="furnished">furnished</option>
+
+            </select>
+        </p>
+
+        <p>
+            <label for="budget">Enter budget:</label>
+            <input type="number" id="budget" name="budget" placeholder="Type something..." min="1" max="1000000000" required> 
+        </p>
+
+        <p>
+            <label for="locality">Enter locality:</label>
+            <input type="text" id="locality" name="locality" placeholder="Type something..." required> 
+        </p>
+
+
+        <p>
+            <label for="type_contract">Select type of contract:</label>
+            <select id="type_contract" name="type_contract">
+
+                <option value="sale">sale</option>
+                <option value="rental">rental</option>
+
+            </select>
+        </p>
+
+        <p>
+            <label for="ownershipDoc">Upload ownership document</label>
+            <input type="file" id="ownershipDoc" name="ownershipDoc" accept=".pdf" required> 
+        </p>
+
+        <p>
+            <label for="identityDoc">Upload identification document</label>
+            <input type="file" id="identityDoc" name="identityDoc" accept=".pdf" required> 
+        </p>
+
+        <button type="submit">submit</button>
+    </form> -->
+
+</body>
+</html>

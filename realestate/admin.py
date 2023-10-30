@@ -5,3 +5,4 @@ from realestate.models import *
 admin.site.register(AdminInfo)
 admin.site.register(BuyerInfo)
 admin.site.register(SellerInfo)
+admin.site.register(ListingInfo)

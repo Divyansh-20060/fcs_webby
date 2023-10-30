@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Deletion</title>
+</head>
+<body>
+    <h1>Confirm Deletion</h1>
+    <p>Are you sure you want to delete the listing with ID {{ listing.ID }}?</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, delete this listing</button>
+    </form>
+    
+    <a href="{% url 'view seller listings' %}">Cancel</a>
+</body>
+</html>

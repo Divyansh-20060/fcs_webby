@@ -15,8 +15,14 @@ urlpatterns = [
     path('loginPage/',loginPage,name="login page"),
 
     path('sellerHome/',sellerHome,name="seller home"),
+    path('createListing/',createListing, name="create listing"),
+    path('viewSellerListings/', viewSellerListings, name="view seller listings"),
+    path('edit_listing/<int:listing_id>', edit_listing, name="edit_listing"),
+    path('delete_listing/<int:listing_id>', delete_listing, name = "delete_listing"),
+    
     path('adminHome/',adminHome,name="admin home"),
     path('buyerHome/',buyerHome,name="buyer home"),
+    path('viewBuyerListings/', viewBuyerListings, name ="view buyer listings"),
 
     path('userProfile/', userProfile, name = "user Profile"),
     path('updatePassword/',updatePassword,name="update password"),

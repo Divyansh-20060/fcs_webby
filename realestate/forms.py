@@ -19,3 +19,13 @@ class PasswordForm(forms.Form):
     old_password = forms.CharField(max_length=200)
     new_password = forms.CharField(max_length=200)
     confirm_new_password = forms.CharField(max_length=200)
+
+class CreateListingForm(forms.Form):
+    type_property = forms.CharField(max_length=50)
+    date = forms.DateField()
+    amenities = forms.CharField(max_length=50)
+    budget = forms.IntegerField()
+    locality = forms.CharField(max_length=50)
+    type_contract = forms.CharField(max_length=50)
+    ownershipDoc = forms.FileField()
+    identityDoc = forms.forms.FileField()

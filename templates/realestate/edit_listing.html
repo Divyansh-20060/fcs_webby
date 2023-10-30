@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>something</title>
+</head>
+<body>
+
+    <h1>Edit Listing</h1>
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
+        <strong{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</strong>
+    </div>
+    {% endfor %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.as_p }} 
+        
+        <button type="submit">Update Listing</button>
+    </form>
+</body>
+</html>

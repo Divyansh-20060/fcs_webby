@@ -8,14 +8,16 @@
     <h1>Welcome to Buyer Home</h1>
 
 <!-- Search for Listings -->
-    <section>
+
+
+    <!-- <section>
         <h2>Search for Listings</h2>
         <form action="showListings.html" method="get">
             <input type="text" id="search-input" name="search-input" placeholder="property/ location/ ...">
         </form>
         <button id="submit" onclick="handleShowListings()">Search</button>
 
-    </section>
+    </section> -->
 
     <!-- View Profile -->
     <section>
@@ -28,6 +30,14 @@
         <h2>Purchase History</h2>
         <button id="submit" onclick="handlePurchaseHistory()">Purchase Statement</button>
     </section>
+
+    <p>
+        <h1>Browse Listings</h1>
+        <form action="{% url 'view buyer listings' %}" method="get">
+            <button type="submit">view</button>
+        </form>
+        <!-- <a href="{% url 'view seller listings' %}">View Seller Info</a> -->
+    </p>
 
     <script type="text/javascript" src="{% static '/js/buyerHome.js' %}">
     </script>
