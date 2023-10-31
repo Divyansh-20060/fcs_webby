@@ -5,6 +5,13 @@
     <title>Welcome</title>
 </head>
 <body>
+
+    {% for message in messages %}
+    <div class="alert" role = "alert">
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
+
     <h1>Welcome to the website</h1>
 
     <p>

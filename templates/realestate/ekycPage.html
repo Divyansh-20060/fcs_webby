@@ -5,10 +5,33 @@
     <title>Welcome</title>
 </head>
 <body>
+
+    {% for message in messages %}
+    <div class="alert" role = "alert">
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
+
     <h1>Welcome to the ekyc</h1>
     
-    <form action="{% url 'main welcome' %}" method="get">
-        <button type="submit">Redirect</button>
+    <form method="post" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <p>
+            <label for="email">Enter email:</label>
+            <input type="email" id="email" name="email" placeholder="Type something..." required> 
+        </p>
+    
+    
+        <p>
+            <label for="password">Enter password:</label>
+            <input type="password" id="password" name="password" placeholder="Type something..." required> 
+        </p>
+
+
+        <button type="submit">Log In</button>
+
     </form>
     <!-- <a href="/media/proofIDs/file.pdf" download="my_document.pdf">Download PDF</a> -->
 

@@ -23,6 +23,8 @@ urlpatterns = [
     path('adminHome/',adminHome,name="admin home"),
     path('buyerHome/',buyerHome,name="buyer home"),
     path('viewBuyerListings/', viewBuyerListings, name ="view buyer listings"),
+    path('buyerSignContract/<int:listing_id>', buyerSignContract, name = "buyerSignContract"),
+
 
     path('userProfile/', userProfile, name = "user Profile"),
     path('updatePassword/',updatePassword,name="update password"),
@@ -30,5 +32,7 @@ urlpatterns = [
 
     path('showListings/',showListings,name="showListings"),
     path('purchaseHistory/',purchaseHistory,name="Purchases"),
+    
+    path('returnHome/',returnHome,name="return home"),
     
 ]

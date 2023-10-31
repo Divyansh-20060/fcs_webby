@@ -20,10 +20,12 @@
     </section> -->
 
     <!-- View Profile -->
-    <section>
-        <h2>View Profile</h2>
-        <button id="submit" onclick="handleViewProfile()">Profile</button>
-    </section>
+    <p>
+        <h1>View or Edit profile</h1>
+        <form action="{% url 'user Profile' %}" method="get">
+            <button type="submit">view</button>
+        </form>
+    </p>
 
     <!-- Purchase History -->
     <section>

@@ -28,4 +28,7 @@ class CreateListingForm(forms.Form):
     locality = forms.CharField(max_length=50)
     type_contract = forms.CharField(max_length=50)
     ownershipDoc = forms.FileField()
-    identityDoc = forms.forms.FileField()
+    identityDoc = forms.FileField()
+
+class submitSignatureform(forms.Form):
+    signature = forms.FileField()

@@ -1,16 +1,17 @@
 from django.shortcuts import render, redirect
+import requests
 from realestate.forms import *
 from realestate.models import *
 from django.contrib import messages
 import rsa, hashlib
 from django.core.mail import send_mail
 from website.settings import EMAIL_HOST_USER
-# import random
 import secrets
-# from sign_logic import *
 import re
 from datetime import date
-
+from django.core.files.base import ContentFile
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 
 otps = [int(i) for i in range(100000,1000000)]
@@ -34,6 +35,65 @@ def generate_salt():
     return salt
 
 
+
+def ekyc_info_checker(request):
+    
+    check = True
+    if 'ekyc_data' not in request.session:
+        check = False
+        
+    elif 'email' not in request.session['ekyc_data'] or 'status' not in request.session['ekyc_data']:
+        check = False
+        
+    if (check == False):
+        messages.success(request, 'ekyc not done')
+        
+    
+    return check
+    
+def user_data_checker(request):
+    
+    check = True
+    
+    if 'user_data' not in request.session:
+        check = False
+        
+    elif 'user_type' not in request.session['user_data'] or 'username' not in request.session['user_data']:
+        check = False
+        
+    if (check == False):
+        messages.success(request, 'please log in first!')
+        
+    return check
+
+
+def position_checker(request):
+    
+    check = True
+    
+    if 'position' not in request.session:
+        check = False
+        
+    if (check == False):
+        messages.success(request, 'undifined behavior!')
+        
+    return check
+
+def returnHome(request):
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    user_type = request.session['user_data']['user_type']
+    
+    if(user_type == "seller"):
+        return redirect("seller home")
+
+    elif(user_type == "buyer"):
+        return redirect("buyer home")
+    
 def verify_doc(request, public_key_bin, document_bin, signer):
     try:
         public_key = rsa.PublicKey.load_pkcs1(public_key_bin)
@@ -52,6 +112,14 @@ def verify_doc(request, public_key_bin, document_bin, signer):
         return False
 
 
+def get_sign(private_key_bin, document_bin):##paths of the private key and the document to be signed
+    ##load the private key into a variable
+    private_key = rsa.PrivateKey.load_pkcs1(private_key_bin)
+
+    file_content = document_bin.split(b"signature:")[0]
+    signature = rsa.sign(file_content, private_key, "SHA-512").hex()
+    return signature
+
 def check_input(string, pattern):
     if re.match(pattern, string):
         return True
@@ -59,14 +127,49 @@ def check_input(string, pattern):
         return False
 
 def ekycStart(request):
+    if request.method == "POST":
+        
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        data = {
+            'email': email,
+            'password': password
+        }
+
+        response = requests.post("https://192.168.3.39:5000/kyc", json=data, verify=False)
+        
+        response_data = response.json()
+        
+        message = response_data['message']
+        status = response_data['status']
+        
+        messages.success(request, message)
+
+        if(status == 'success'):
+            request.session['ekyc_data'] = {
+                'email': email,
+                'status' : status
+            }
+            return redirect('main welcome')
+        
     return render (request, 'realestate/ekycPage.html')
 
 def mainWelcome(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
     
     request.session['position'] = 'main_welcome'
     return render (request,'realestate/mainWelcome.html')
 
 def emailVerifyPage(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (position_checker(request) == False):
+        return redirect('ekyc page')
     
     if request.method == 'POST':
         
@@ -102,6 +205,9 @@ def emailVerifyPage(request):
 
 
 def otpPage(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
     
     if 'otp_data' not in request.session:
         return redirect('main welcome')
@@ -163,6 +269,12 @@ def otpPage(request):
 
 
 def signupPage(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if 'otp_data' not in request.session:
+        return redirect('main welcome')
     
     if request.method == 'POST':
         form = SignupForm(request.POST, request.FILES)
@@ -250,6 +362,9 @@ def signupPage(request):
 
 
 def loginPage(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
     
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -382,9 +497,21 @@ def loginPage(request):
     return render(request, 'realestate/loginPage.html',{'form':form})
 
 def sellerHome(request):
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     return render(request,'realestate/sellerHome.html')
 
 def createListing(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
     
     if request.method == "POST":
         
@@ -436,14 +563,38 @@ def createListing(request):
 
 def userProfile(request):
     
-    username = request.session['user_data']['username']
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
     
-    user_info = SellerInfo.objects.get(username=username)
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    user_data_checker(request)
+    
+    username = request.session['user_data']['username']
+    user_type = request.session['user_data']['user_type']
+    
+    user_info = None
+    
+    if user_type == 'seller':
+        user_info = SellerInfo.objects.get(username=username)
+    elif user_type == 'buyer':
+        user_info = BuyerInfo.objects.get(username=username)
+    else:
+        messages.success(request, 'invalid user type!')
+        return redirect('main welcome')
+    
     request.session['position'] = 'profile_page'
     
     return render (request, 'realestate/userProfile.html', {'user_info': user_info})
 
 def updatePassword(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
     
     if request.method == 'POST':
         
@@ -547,6 +698,12 @@ def updatePassword(request):
 
 
 def updateNamePOI(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
     
     if request.method == 'POST':
         
@@ -682,26 +839,63 @@ def updateNamePOI(request):
 
 
 def adminHome(request):
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     return render(request,'realestate/adminHome.html')
 
 def buyerHome(request):
-    return render(request,'realestate/adminHome.html')
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    elif (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    else:
+        return render(request,'realestate/buyerHome.html')
 
 ########################### Legacy ############
 
-def buyerHome(request):
-    # print("django log: great success wow")
-    return render(request,'realestate/buyerHome.html')
+# def buyerHome(request):
+    
+#     if (ekyc_info_checker(request) == False):
+#         return redirect('ekyc page')
+    
+#     # print("django log: great success wow")
+#     return render(request,'realestate/buyerHome.html')
 
 def showListings(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     return render(request,'realestate/showListings.html')
 
 def purchaseHistory(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     return render(request,'realestate/purchaseHistory.html')
 
 
 def viewSellerListings(request):
 
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     username = request.session['user_data']['username']
 
     if username:
@@ -713,10 +907,25 @@ def viewSellerListings(request):
         return render(request, 'error.html', {'message': 'Username not found in session'})
 
 def viewBuyerListings(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     listing_info = ListingInfo.objects.filter()
     return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
 
 def edit_listing(request, listing_id):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    
     listing = ListingInfo.objects.filter(ID=listing_id).first()
     # return render(request, 'realestate/edit_listing.html', {'listing': listing})
 
@@ -773,8 +982,96 @@ def edit_listing(request, listing_id):
     return render(request, 'realestate/edit_listing.html', {'form': form, 'listing': listing})
 
 def delete_listing(request, listing_id):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
     listing = ListingInfo.objects.filter(ID=listing_id).first()
     if request.method == "POST":
         listing.delete()
         return redirect('view seller listings')
     return render(request, 'realestate/confirm_delete_listing.html', {'listing': listing})
+
+
+
+def create_contract_sale(filename, typePropety, seller, buyer, date_of_availibility, amenity, price, locality, typeContract ):
+    c = canvas.Canvas(filename, pagesize = letter)
+    delta = 30
+    base = 750
+    c.drawString(250, base-0*delta, "Sale Contract")
+    c.drawString(100, base-1*delta, "typePropety: {}".format(typePropety) )
+    c.drawString(100, base-2*delta, "seller: {}".format(seller) )
+    c.drawString(100, base-3*delta, "buyer: {}".format(buyer) )
+    c.drawString(100, base-4*delta, "date_of_availibility: {}".format(date_of_availibility) )
+    c.drawString(100, base-5*delta, "amenity: {}".format(amenity) )
+    c.drawString(100, base-6*delta, "price: {}".format(price) )
+    c.drawString(100, base-7*delta, "locality: {}".format(locality) )
+    c.drawString(100, base-8*delta, "typeContract: {}".format(typeContract) )
+    c.showPage()
+    # c.save()
+    pdf_data = c.getpdfdata()
+    return pdf_data
+
+def buyerSignContract(request, listing_id):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+
+    listing_info = ListingInfo.objects.filter()
+    # listing = ListingInfo.objects.filter(ID=listing_id).first()
+    # listing.status = "in_progress"
+    # buyer_username = request.session['user_data']['username']
+    # contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract )
+    # messages.success(request, contract_binary[-100:])
+    # if contract_binary:
+    #     listing.buyer = buyer_username
+    #     listing.saleContract.save("contract.pdf", ContentFile(contract_binary), save=True)
+    #     listing.save()
+    # else:
+    #     messages.success(request, "the file wasn't created")
+    if request.method == "POST":
+        form = submitSignatureform(request.POST)
+        if form.is_valid():
+            buyer_signed_contract_bin = form.cleaned_data['signature'].read()
+            with open("/home/iiitd/private.pem", "rb") as f:
+                admin_public_key_bin = f.read()
+            buyer_public_key = BuyerInfo.objects.get(username = request.session['user_data']['username'] ).public_key
+            buyer_public_key_bin = buyer_public_key.open("rb").read()
+            admin_sign = verify_doc(admin_public_key_bin, buyer_signed_contract_bin, "admin")
+            buyer_sign = verify_doc(buyer_public_key_bin, buyer_signed_contract_bin, "buyer")
+            if (admin_sign and buyer_sign):
+                ##verified
+                messages.success(request, "verified")
+            else:
+                messages.success(request, "signature couldn't be verified")
+
+    else:
+        listing = ListingInfo.objects.filter(ID=listing_id).first()
+        listing.status = "in_progress"
+        buyer_username = request.session['user_data']['username']
+        contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract )
+        
+        # messages.success(request, contract_binary[-100:])
+        if contract_binary:
+            ##load the privatekey and sign the contract
+            with open("/home/iiitd/private.pem", "rb") as f:
+                private_key = f.read()
+            admin_signature = get_sign(private_key, contract_binary)
+            contract_binary = contract_binary + b"signature:" + b"admin" + admin_signature.encode() + b"admin"
+
+            listing.buyer = buyer_username
+            listing.saleContract.save("contract.pdf", ContentFile(contract_binary), save=True)
+            listing.save()
+        else:
+            messages.success(request, "the file wasn't created")
+        form = submitSignatureform(request.POST)
+
+    return render(request, 'realestate/buyerSignContract.html', {'form': form, 'listing':listing})
+    # return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+
