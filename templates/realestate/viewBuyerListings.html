@@ -46,7 +46,9 @@
                 <th>saleContract</th>
                 <th>rentalContract_buyer</th>
                 <th>rentalContract_seller</th>
-                <th>Buy</th>
+                <th>Interested</th>
+                <th>Sign</th>
+                <th>Make Payment</th>
 
             </tr>
         </thead>
@@ -101,7 +103,21 @@
                     </td>
                     <td>
                         {% if info.status == "unsold" %}
-                            <a href="{% url 'buyerSignContract' info.ID %}">Buy</a>
+                            <a href="{% url 'buyerInterested' info.ID %}">Buy</a>
+                        {% else %}
+                            listing is sold or in progress
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.status == "seller_interested" %}
+                            <a href="{% url 'buyerSignContract' info.ID %}">Sign</a>
+                        {% else %}
+                            listing is sold or in progress
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.status == "signs_uploaded" %}
+                            <a href="{% url 'makePayment' info.ID %}">Make Payment</a>
                         {% else %}
                             listing is sold or in progress
                         {% endif %}

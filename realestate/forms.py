@@ -31,4 +31,4 @@ class CreateListingForm(forms.Form):
     identityDoc = forms.FileField()
 
 class submitSignatureform(forms.Form):
-    signature = forms.FileField()
+    signature = forms.CharField(max_length=512)

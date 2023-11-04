@@ -19,12 +19,16 @@ urlpatterns = [
     path('viewSellerListings/', viewSellerListings, name="view seller listings"),
     path('edit_listing/<int:listing_id>', edit_listing, name="edit_listing"),
     path('delete_listing/<int:listing_id>', delete_listing, name = "delete_listing"),
-    
+    path('sellerSignContract/<int:listing_id>', sellerSignContract, name = "sellerSignContract"),
+    path('sellerApprove/<int:listing_id>', sellerApprove, name = "sellerApprove"),
+    path('sellerReject/<int:listing_id>', sellerReject, name = "sellerReject"),
+
     path('adminHome/',adminHome,name="admin home"),
     path('buyerHome/',buyerHome,name="buyer home"),
     path('viewBuyerListings/', viewBuyerListings, name ="view buyer listings"),
     path('buyerSignContract/<int:listing_id>', buyerSignContract, name = "buyerSignContract"),
-
+    path('buyerInterested/<int:listing_id>', buyerInterested, name = "buyerInterested"),
+    path('makePayment/<int:listing_id>', makePayment, name="makePayment"),
 
     path('userProfile/', userProfile, name = "user Profile"),
     path('updatePassword/',updatePassword,name="update password"),

@@ -13,18 +13,16 @@ from django.core.files.base import ContentFile
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-
+##Regexes
 otps = [int(i) for i in range(100000,1000000)]
 username_pattern = r"^[a-zA-Z0-9_\-]{4,50}$"
 name_pattern = r"^(?=.{4,50}$)([a-zA-Z]\s{0,1})+$"
 password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#!%&])[A-Za-z\d@#!%&]{8,50}$"
 otp_pattern = r"^[0-9]{6}$"
-
 type_property_pattern = r"^[a-zA-Z]{4,50}$"
 amenities_pattern = r"^[a-zA-Z]{4,50}$"
 budget_pattern = r"^[1-9][0-9]{0,19}$"
 locality_pattern = r"^(?=.{1,150}$)([a-zA-Z0-9\-]\s{0,1})+$"
-# type_contract_pattern = r"[a-z]{1,20}"
 type_contract_pattern = r"^(sale|rental)$"
 date_pattern = r"^(((\d{4}\-((0[13578]\-|1[02]\-)(0[1-9]|[12]\d|3[01])|(0[13456789]\-|1[012]\-)(0[1-9]|[12]\d|30)|02\-(0[1-9]|1\d|2[0-8])))|((([02468][048]|[13579][26])00|\d{2}([13579][26]|0[48]|[2468][048])))\-02\-29)){0,10}$"
 
@@ -107,6 +105,22 @@ def verify_doc(request, public_key_bin, document_bin, signer):
         return False
     except Exception as e:
         # print("error:", e)
+        messages.success(request, e)
+        messages.success(request, len(content))
+        return False
+
+def verify_doc2(request, public_key_bin, document_bin, signature):
+    try:
+        public_key = rsa.PublicKey.load_pkcs1(public_key_bin)
+        content = document_bin.split(b"signature:")[0]
+        # signature = document_bin.split(signer.encode())[-2]
+        rsa.verify(content, bytes.fromhex(signature), public_key)
+        return True
+    except rsa.pkcs1.CryptoError as crypto_error:
+        # print(crypto_error)
+        # messages.success(request, crypto_error)
+        return False
+    except Exception as e:
         messages.success(request, e)
         messages.success(request, len(content))
         return False
@@ -1001,10 +1015,15 @@ def create_contract_sale(filename, typePropety, seller, buyer, date_of_availibil
     c = canvas.Canvas(filename, pagesize = letter)
     delta = 30
     base = 750
-    c.drawString(250, base-0*delta, "Sale Contract")
     c.drawString(100, base-1*delta, "typePropety: {}".format(typePropety) )
-    c.drawString(100, base-2*delta, "seller: {}".format(seller) )
-    c.drawString(100, base-3*delta, "buyer: {}".format(buyer) )
+    if typeContract == "sale":
+        c.drawString(250, base-0*delta, "Sale Contract")
+        c.drawString(100, base-2*delta, "seller: {}".format(seller) )
+        c.drawString(100, base-3*delta, "buyer: {}".format(buyer) )
+    else:
+        c.drawString(250, base-0*delta, "Rent Contract")
+        c.drawString(100, base-2*delta, "lessor: {}".format(seller) )
+        c.drawString(100, base-3*delta, "lessee: {}".format(buyer) )
     c.drawString(100, base-4*delta, "date_of_availibility: {}".format(date_of_availibility) )
     c.drawString(100, base-5*delta, "amenity: {}".format(amenity) )
     c.drawString(100, base-6*delta, "price: {}".format(price) )
@@ -1022,56 +1041,214 @@ def buyerSignContract(request, listing_id):
     
     if (user_data_checker(request) == False):
         return redirect('main welcome')
-
+    
+    
     listing_info = ListingInfo.objects.filter()
-    # listing = ListingInfo.objects.filter(ID=listing_id).first()
-    # listing.status = "in_progress"
-    # buyer_username = request.session['user_data']['username']
-    # contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract )
-    # messages.success(request, contract_binary[-100:])
-    # if contract_binary:
-    #     listing.buyer = buyer_username
-    #     listing.saleContract.save("contract.pdf", ContentFile(contract_binary), save=True)
-    #     listing.save()
-    # else:
-    #     messages.success(request, "the file wasn't created")
-    if request.method == "POST":
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    type_contract = listing.typeContract
+
+    if request.method == "POST": ##when buyer submits the signature form
         form = submitSignatureform(request.POST)
         if form.is_valid():
-            buyer_signed_contract_bin = form.cleaned_data['signature'].read()
-            with open("/home/iiitd/private.pem", "rb") as f:
-                admin_public_key_bin = f.read()
-            buyer_public_key = BuyerInfo.objects.get(username = request.session['user_data']['username'] ).public_key
-            buyer_public_key_bin = buyer_public_key.open("rb").read()
-            admin_sign = verify_doc(admin_public_key_bin, buyer_signed_contract_bin, "admin")
-            buyer_sign = verify_doc(buyer_public_key_bin, buyer_signed_contract_bin, "buyer")
-            if (admin_sign and buyer_sign):
-                ##verified
-                messages.success(request, "verified")
-            else:
-                messages.success(request, "signature couldn't be verified")
+            try:
+                buyer_signature = form.cleaned_data['signature']
+                ## validate the signature too for code injection and stuff
+                buyer_public_key = BuyerInfo.objects.get(username = request.session['user_data']['username'] ).public_key
+                buyer_public_key_bin = buyer_public_key.open("rb").read()
+                if type_contract == "sale":
+                    contract = listing.saleContract.open("rb").read()
+                    buyer_sign_valid = verify_doc2(request, buyer_public_key_bin, contract, buyer_signature)
+                    if buyer_sign_valid:
+                        listing.buyer_sign = buyer_signature
+                        if listing.seller_sign:
+                            listing.status = "signs_uploaded"
+                        listing.save()
+                        messages.success(request, "signature verified")
+                        return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+                    else:
+                        if listing.saleContract:
+                            listing.saleContract.delete()
+                        listing.save()
+                        messages.success(request, "signature NOT valid")
+                        return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+                else:
+                    contract = listing.rentalContract_buyer.open("rb").read()
+                    buyer_sign_valid = verify_doc2(request, buyer_public_key_bin, contract, buyer_signature)
+                    if buyer_sign_valid:
+                        listing.buyer_sign = buyer_signature
+                        if listing.seller_sign:
+                            listing.status = "signs_uploaded"
+                        listing.save()
+                        messages.success(request, "signature verified")
+                        return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+                    else:
+                        if listing.rentalContract_buyer:
+                            listing.rentalContract_buyer.delete()
+                        listing.save()
+                        messages.success(request, "signature NOT valid")
+                        return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
 
-    else:
-        listing = ListingInfo.objects.filter(ID=listing_id).first()
-        listing.status = "in_progress"
+
+            except Exception as e:
+                messages.success(request, e)
+
+    else:## when buyer clicks on buy
+        # type_contract = listing.typeContract
         buyer_username = request.session['user_data']['username']
-        contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract )
-        
-        # messages.success(request, contract_binary[-100:])
-        if contract_binary:
-            ##load the privatekey and sign the contract
-            with open("/home/iiitd/private.pem", "rb") as f:
-                private_key = f.read()
-            admin_signature = get_sign(private_key, contract_binary)
-            contract_binary = contract_binary + b"signature:" + b"admin" + admin_signature.encode() + b"admin"
+        if  (type_contract == "sale"):
+            if not listing.saleContract:
+                contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract)
+                if contract_binary:
+                    ##load the privatekey and sign the contract
+                    with open("/home/iiitd/private.pem", "rb") as f:
+                        private_key = f.read()
+                    admin_signature = get_sign(private_key, contract_binary)
+                    contract_binary = contract_binary + b"signature:" + b"admin" + admin_signature.encode() + b"admin"
 
-            listing.buyer = buyer_username
-            listing.saleContract.save("contract.pdf", ContentFile(contract_binary), save=True)
-            listing.save()
+                    listing.saleContract.save("contract.pdf", ContentFile(contract_binary), save=True)
+                    listing.save()
+                else:
+                    messages.success(request, "the file wasn't created")
+                form = submitSignatureform()
+        ##rental
         else:
-            messages.success(request, "the file wasn't created")
-        form = submitSignatureform(request.POST)
+            contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract)
+            if contract_binary:
+                ##load the privatekey and sign the contract
+                with open("/home/iiitd/private.pem", "rb") as f:
+                    private_key = f.read()
+                admin_signature = get_sign(private_key, contract_binary)
+                contract_binary = contract_binary + b"signature:" + b"admin" + admin_signature.encode() + b"admin"
+                listing.rentalContract_buyer.save("contract.pdf", ContentFile(contract_binary), save=True)
+                listing.save()
+            else:
+                messages.success(request, "the file wasn't created")
+        form = submitSignatureform()
+            
+
 
     return render(request, 'realestate/buyerSignContract.html', {'form': form, 'listing':listing})
-    # return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+
+def sellerSignContract(request, listing_id):
+
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    seller_info = ListingInfo.objects.filter()
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    type_contract = listing.typeContract
+
+    if request.method == "POST": ##when buyer submits the signature form
+        form = submitSignatureform(request.POST)
+        if form.is_valid():
+            try:
+                seller_signature = form.cleaned_data['signature']
+                ## validate the signature too for code injection and stuff
+                seller_public_key = SellerInfo.objects.get(username = request.session['user_data']['username'] ).public_key
+                seller_public_key_bin = seller_public_key.open("rb").read()
+                if type_contract == "sale":
+                    contract = listing.saleContract.open("rb").read()
+                    seller_sign_valid = verify_doc2(request, seller_public_key_bin, contract, seller_signature)
+                    if seller_sign_valid:
+                        listing.seller_sign = seller_signature
+                        if listing.buyer_sign:
+                            listing.status = "signs_uploaded"
+                        listing.save()
+                        messages.success(request, "signature verified")
+                        return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
+                    else:
+                        if listing.saleContract:
+                            listing.saleContract.delete()
+                        listing.save()
+                        messages.success(request, "signature NOT valid")
+                        return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
+                else:
+                    contract = listing.rentalContract_seller.open("rb").read()
+                    seller_sign_valid = verify_doc2(request, seller_public_key_bin, contract, seller_signature)
+                    if seller_sign_valid:
+                        listing.seller_sign = seller_signature
+                        if listing.buyer_sign:
+                            listing.status = "signs_uploaded"
+                        listing.save()
+                        messages.success(request, "signature verified")
+                        return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
+                    else:
+                        if listing.rentalContract_seller:
+                            listing.rentalContract_seller.delete()
+                        listing.save()
+                        messages.success(request, "signature NOT valid")
+                        return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
+            except Exception as e:
+                messages.success(request, e)
+
+    else:## when seller clicks on buy
+        type_contract = listing.typeContract
+        buyer_username = request.session['user_data']['username']
+        if  (type_contract == "sale"):
+            if not listing.saleContract:
+                contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract)
+                if contract_binary:
+                    ##load the privatekey and sign the contract
+                    with open("/home/iiitd/private.pem", "rb") as f:
+                        private_key = f.read()
+                    admin_signature = get_sign(private_key, contract_binary)
+                    contract_binary = contract_binary + b"signature:" + b"admin" + admin_signature.encode() + b"admin"
+                    listing.saleContract.save("contract.pdf", ContentFile(contract_binary), save=True)
+                    listing.save()
+                else:
+                    messages.success(request, "the file wasn't created")
+                form = submitSignatureform()
+        ##rental
+        else:
+            contract_binary = create_contract_sale("contract.pdf", listing.typePropety, listing.seller, buyer_username, listing.date, listing.amenity, listing.budget, listing.locality, listing.typeContract)
+            if contract_binary:
+                ##load the privatekey and sign the contract
+                with open("/home/iiitd/private.pem", "rb") as f:
+                    private_key = f.read()
+                admin_signature = get_sign(private_key, contract_binary)
+                contract_binary = contract_binary + b"signature:" + b"admin" + admin_signature.encode() + b"admin"
+
+                listing.rentalContract_seller.save("contract.pdf", ContentFile(contract_binary), save=True)
+                listing.save()
+            else:
+                messages.success(request, "the file wasn't created")
+        form = submitSignatureform()
+            
+
+
+    return render(request, 'realestate/buyerSignContract.html', {'form': form, 'listing':listing})
+
+def buyerInterested(request, listing_id):
+    listing_info = ListingInfo.objects.filter()
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    listing.status = "buyer_interested"
+    buyer_username = request.session['user_data']['username']
+    listing.buyer = buyer_username
+    listing.save()
+    return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+
+def sellerApprove(request, listing_id):
+    seller_info = ListingInfo.objects.filter()
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    listing.status = "seller_interested"
+    listing.save()
+    return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
+
+def sellerReject(request, listing_id):
+    seller_info = ListingInfo.objects.filter()
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    listing.status = "unsold"
+    listing.buyer = None
+    if listing.saleContract:
+        listing.saleContract.delete()
+    listing.save()
+    return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
+
+
+def makePayment(request, listing_id):
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    return render(request, 'realestate/makePayment.html', {'listing':listing})
 

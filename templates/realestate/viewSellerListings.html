@@ -5,6 +5,11 @@
     <title>Seller Info</title>
 </head>
 <body>
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
+        <strong{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</strong>
+    </div>
+    {% endfor %}
     <h1>Seller Listings</h1>
     <style>
         table {
@@ -43,6 +48,9 @@
                 <th>rentalContract_seller</th>
                 <th>Edit listing</th>
                 <th>Delete listing</th>
+                <th>Sign</th>
+                <th>Approve</th>
+                <th>Reject</th>
 
 
             </tr>
@@ -98,10 +106,40 @@
                     </td>
                     <!--edit button-->
                     <td>
-                        <a href="{% url 'edit_listing' info.ID %}">Edit Listing</a>
+                        {% if info.status == "unsold" %}
+                            <a href="{% url 'edit_listing' info.ID %}">Edit Listing</a>
+                        {% else %}
+                            listing is sold or in progress cannot edit 
+                        {% endif %}
+                        
                     </td>
                     <td>
-                        <a href="{% url 'delete_listing' info.ID %}">Delete Listing</a>
+                        {% if info.status == "unsold" %}
+                            <a href="{% url 'delete_listing' info.ID %}">Delete Listing</a>
+                        {% else %}
+                            listing is sold or in progress cannot delete
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.status == "seller_interested" %}
+                            <a href="{% url 'sellerSignContract' info.ID %}">Sign</a>
+                        {% else %}
+                            listing is sold or in progress
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.status == "buyer_interested" %}
+                            <a href="{% url 'sellerApprove' info.ID %}">Approve</a>
+                        {% else %}
+                            listing is sold or in progress
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.status == "buyer_interested" or  info.status == "seller_interested" %}
+                            <a href="{% url 'sellerReject' info.ID %}">Reject</a>
+                        {% else %}
+                            listing is sold or in progress
+                        {% endif %}
                     </td>
 
                 </tr>

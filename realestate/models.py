@@ -45,3 +45,5 @@ class ListingInfo(models.Model):
     saleContract = models.FileField(upload_to='Sale_Contract/', null = True, blank=True)
     rentalContract_buyer = models.FileField(upload_to='Rental_buyer/', null = True, blank=True)
     rentalContract_seller = models.FileField(upload_to='Rental_seller/', null = True, blank=True)
+    buyer_sign = models.CharField(max_length=512, null = True)
+    seller_sign = models.CharField(max_length=512, null = True)
