@@ -7,13 +7,52 @@
 </head>
 <body>
 
-    <h1>Payment Page</h1>
     {% for message in messages %}
     <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
         <strong{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</strong>
     </div>
     {% endfor %}
+
+    <h1>Payment Page</h1>
     
+    <p>
+        <h1>Testing payment</h1>
+
+        <form method="post">
+
+            <button id="rzp-button1">Pay</button>
+        </form>
+    </p>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+            <script>
+            var options = {
+                "key": "{{key}}",
+                "amount": "{{payment.ammount}}", 
+                "currency": "INR",
+                "name": "Code defenders",
+                "description": "Test Transaction",
+                "image": "https://steamuserimages-a.akamaihd.net/ugc/2074509887587699351/66FF7973966B2F1FEA01A780C4D90586EA80A115/",
+                "order_id": "{{payment.id}}",
+                "callback_url": "{{succ_url}}",
+
+                "notes": {
+                    "address": "Razorpay Corporate Office"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            var rzp1 = new Razorpay(options);
+
+            document.getElementById('rzp-button1').onclick = function(e){
+                rzp1.open();
+                e.preventDefault();
+                //window.location.href = '/mainWelcome';
+            }
+            </script>
+
 
 </body>
 </html>

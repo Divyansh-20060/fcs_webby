@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>admin profile</title>
+</head>
+<body>
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert dismissible fade show" role = "alert">
+        <strong{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</strong>
+    </div>
+    {% endfor %}
+
+    <h1>User Profile</h1>
+    <p><strong>Name:</strong> {{ user_info.name }}</p>
+    <p><strong>Username:</strong> {{ user_info.username }}</p>
+    
+    <p>
+        <strong>update password</strong>
+        <form action="{% url 'update password' %}" method="get">
+            <button type="submit">update password</button>
+        </form>
+    </p>
+
+    
+
+    <p>
+        <strong>Return home</strong>
+        <form action="{% url 'return home' %}" method="get">
+            <button type="submit">home</button>
+        </form>
+    </p>
+
+
+
+</body>
+</html>

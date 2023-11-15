@@ -9,7 +9,7 @@ class SellerInfo(models.Model):
     public_key = models.FileField(upload_to='publicKeys/')
     proof_of_id = models.FileField(upload_to='proofIDs/')
     email = models.CharField(max_length=50, default="strings")
-    malicious = models.BooleanField
+    malicious = models.BooleanField(default=False)
     
     
 class BuyerInfo(models.Model):
@@ -20,7 +20,7 @@ class BuyerInfo(models.Model):
     public_key = models.FileField(upload_to='public_keys/')
     proof_of_id = models.FileField(upload_to='proofIDs/')
     email = models.CharField(max_length=50)
-    malicious = models.BooleanField
+    malicious = models.BooleanField(default=False)
     
 class AdminInfo(models.Model):
     name = models.CharField(max_length=50)
@@ -47,4 +47,4 @@ class ListingInfo(models.Model):
     rentalContract_seller = models.FileField(upload_to='Rental_seller/', null = True, blank=True)
     buyer_sign = models.CharField(max_length=512, null = True)
     seller_sign = models.CharField(max_length=512, null = True)
-    
+    payment_log =  models.JSONField(default=dict)

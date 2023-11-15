@@ -29,6 +29,7 @@ urlpatterns = [
     path('buyerSignContract/<int:listing_id>', buyerSignContract, name = "buyerSignContract"),
     path('buyerInterested/<int:listing_id>', buyerInterested, name = "buyerInterested"),
     path('makePayment/<int:listing_id>', makePayment, name="makePayment"),
+    path('view_currrent_listings', view_currrent_listings, name="view_currrent_listings"),
 
     path('userProfile/', userProfile, name = "user Profile"),
     path('updatePassword/',updatePassword,name="update password"),
@@ -38,5 +39,18 @@ urlpatterns = [
     path('purchaseHistory/',purchaseHistory,name="Purchases"),
     
     path('returnHome/',returnHome,name="return home"),
+    
+    path('userProfile/', userProfile, name = "user Profile"),
+    
+    path('adminProfile/', adminProfile, name = "admin Profile"),
+    
+    path('transactionVerdict/<int:listing_id>',transactionVerdict,name="transaction verdict"),
+    
+    path('viewUsers/', viewUsers, name= "view users"),
+    path('viewProfile/<str:username>/', viewProfile, name='view profile'),
+    path('mark_malicious/<str:username>', mark_malicious, name="mark_malicious")
+    
+    #path('adminProfile/', admin, name = "admin password"),
+    
     
 ]

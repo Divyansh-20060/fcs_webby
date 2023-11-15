@@ -9,9 +9,13 @@ from website.settings import EMAIL_HOST_USER
 import secrets
 import re
 from datetime import date
+from datetime import datetime
+
 from django.core.files.base import ContentFile
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
 
 ##Regexes
 otps = [int(i) for i in range(100000,1000000)]
@@ -91,6 +95,12 @@ def returnHome(request):
 
     elif(user_type == "buyer"):
         return redirect("buyer home")
+    
+    elif(user_type == "admin"):
+        return redirect("admin home")
+    
+    else:
+        return redirect("main welcome")
     
 def verify_doc(request, public_key_bin, document_bin, signer):
     try:
@@ -699,6 +709,42 @@ def updatePassword(request):
                                 return redirect('main welcome')   
                     else:
                         messages.success(request,'old password dose not match!')
+                
+                elif user_type == 'admin':
+                    obj = AdminInfo.objects.filter(username=cusername).first()
+                    sha512 = hashlib.sha512()
+                    stored_salt = obj.salt
+                    salted = foldpass + stored_salt
+                    sha512.update(salted.encode())
+                    hashed_fpassword = sha512.hexdigest()
+                    if AdminInfo.objects.filter(username=cusername,password= hashed_fpassword).exists():
+                        if fnewpass != fconfpass:
+                            messages.success(request,"new passwords don't match")
+                        
+                        else:
+                            
+                            sha512 = hashlib.sha512()
+                            salt = generate_salt()
+                            salted_fnewpass = fnewpass + salt
+                            sha512.update(salted_fnewpass.encode())
+                            hashed_newpassword = sha512.hexdigest()
+                    
+                            user_entry = AdminInfo.objects.filter(username=cusername).first()
+                            
+                            if user_entry:
+                                user_entry.password = hashed_newpassword
+                                user_entry.salt = salt
+                                user_entry.save()
+                                messages.success(request,"password updated!")
+                                return redirect('admin Profile')
+                                
+                            else:
+                                messages.success(request,"user does not exist!")
+                                return redirect('main welcome')   
+                    else:
+                        messages.success(request,'old password dose not match!')
+                
+                
                 else:
                     messages.success(request,'invalid user_type')
                     
@@ -808,7 +854,7 @@ def updateNamePOI(request):
             hashed_fpassword = sha512.hexdigest()
 
 
-            if (BuyerInfo.objects.filter(password=hashed_fpassword).exists()):
+            if (SellerInfo.objects.filter(password=hashed_fpassword).exists()):
                 name_check = False
                 file_check = False
                 
@@ -856,10 +902,11 @@ def adminHome(request):
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
     
-    if (user_data_checker(request) == False):
+    elif (user_data_checker(request) == False):
         return redirect('main welcome')
     
-    return render(request,'realestate/adminHome.html')
+    else:
+        return render(request,'realestate/adminHome.html')
 
 def buyerHome(request):
     if (ekyc_info_checker(request) == False):
@@ -921,14 +968,13 @@ def viewSellerListings(request):
         return render(request, 'error.html', {'message': 'Username not found in session'})
 
 def viewBuyerListings(request):
-    
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
         return redirect('main welcome')
-    
-    listing_info = ListingInfo.objects.filter()
+
+    listing_info = ListingInfo.objects.filter(status="unsold")
     return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
 
 def edit_listing(request, listing_id):
@@ -1012,6 +1058,9 @@ def delete_listing(request, listing_id):
 
 
 def create_contract_sale(filename, typePropety, seller, buyer, date_of_availibility, amenity, price, locality, typeContract ):
+    current_datetime = datetime.now()
+    current_date_string = current_datetime.strftime("%d %B %Y")
+
     c = canvas.Canvas(filename, pagesize = letter)
     delta = 30
     base = 750
@@ -1029,6 +1078,7 @@ def create_contract_sale(filename, typePropety, seller, buyer, date_of_availibil
     c.drawString(100, base-6*delta, "price: {}".format(price) )
     c.drawString(100, base-7*delta, "locality: {}".format(locality) )
     c.drawString(100, base-8*delta, "typeContract: {}".format(typeContract) )
+    c.drawString(100, base-9*delta, "Date of contract: {}".format(current_date_string) )
     c.showPage()
     # c.save()
     pdf_data = c.getpdfdata()
@@ -1247,8 +1297,142 @@ def sellerReject(request, listing_id):
     listing.save()
     return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
 
+def add_signatures(request, listing_id):
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    seller_sing = listing.seller_sign.encode()
+    buyer_sign = listing.buyer_sign.encode()
+    type_contract = listing.typeContract
+    if type_contract == "sale":
+        contract = listing.saleContract.open("rb").read()
+        contract = contract + b"signature:" + b"seller" + seller_sing + b"seller"
+        contract = contract + b"signature:" + b"buyer" + buyer_sign + b"buyer"
+        listing.saleContract.save("contract.pdf", ContentFile(contract), save=True)
+    else:
+        seller_contract = listing.rentalContract_seller.open("rb").read()
+        buyer_contract = listing.rentalContract_buyer.open("rb").read()
+
+        seller_contract = seller_contract + b"signature:" + b"seller" + seller_sing + b"seller"
+        buyer_contract = buyer_contract + b"signature:" + b"buyer" + buyer_sign + b"buyer"
+        listing.rentalContract_seller.save("contract.pdf", ContentFile(seller_contract), save=True)
+        listing.rentalContract_buyer.save("contract.pdf", ContentFile(buyer_contract), save=True)
+    listing.status = "sold"
+    listing.save()
+
 
 def makePayment(request, listing_id):
     listing = ListingInfo.objects.filter(ID=listing_id).first()
-    return render(request, 'realestate/makePayment.html', {'listing':listing})
+    
+    
+    amount = listing.budget
+    client = razorpay.Client(auth= ('rzp_test_DQb2iWTK131DuM','VjneqA7APbwDsQI0uW5FpNiT'))
+    payment = client.order.create({'amount': amount*100, 'currency':'INR','payment_capture':1})
+    
+    log = {'order_id': payment['id'], 'amount': amount, 'seller': listing.seller, 'buyer': listing.buyer}
+    
+    listing.payment_log = log
+    
+    succ_url = "https://192.168.2.246/transactionVerdict/" + str(listing_id)
+    
+    listing.save()
+    
+    return render(request, 'realestate/makePayment.html', {'payment':payment, 'succ_url':succ_url, 'key':'rzp_test_DQb2iWTK131DuM'})
 
+@csrf_exempt
+def transactionVerdict(request, listing_id):
+    
+    if request.method == 'POST':
+        
+        data = request.POST.dict()
+        
+        if 'error[code]' not in data:
+            
+            payment_id = data['razorpay_payment_id']
+            signature = data['razorpay_signature']
+            
+            client = razorpay.Client(auth=('rzp_test_DQb2iWTK131DuM','VjneqA7APbwDsQI0uW5FpNiT'))
+
+            response = client.payment.fetch(payment_id)
+            
+            if "error" not in response:
+            
+                listing = ListingInfo.objects.filter(ID=listing_id).first()
+            
+                new_log = listing.payment_log
+            
+                new_log['status'] = "success"
+                new_log['payment_id'] = payment_id
+                new_log['signature'] = signature
+                
+                listing.payment_log = new_log
+                
+                listing.save()
+                ##invoke the function to add the buyer and seller signatures to the contract
+                add_signatures(request, listing_id)
+                return render(request, 'realestate/succ.html')
+            
+            else:
+                return render(request, 'realestate/fail.html')
+            
+        else:
+            return render(request, 'realestate/fail.html')
+
+    
+def adminProfile(request):
+    
+    username = request.session['user_data']['username']
+    user_type = request.session['user_data']['user_type']
+    user_info = AdminInfo.objects.get(username=username)
+    
+    if user_type != 'admin':
+        return redirect('main welcome')
+    
+    return render(request,'realestate/adminProfile.html', {'user_info': user_info})
+
+
+def viewUsers(request):
+    
+    sellers = SellerInfo.objects.values_list('username', flat=True)
+    buyers = BuyerInfo.objects.values_list('username', flat=True)
+    
+    return render(request, 'realestate/viewUsers.html', {'sellers': sellers, 'buyers': buyers})
+
+def viewProfile(request, username):
+    
+    user_details = None
+    user_type = None
+    
+    if BuyerInfo.objects.filter(username=username).exists():
+        user_details = BuyerInfo.objects.get(username=username)
+        user_type = 'buyer'
+    
+    elif SellerInfo.objects.filter(username=username).exists():
+        user_details = SellerInfo.objects.get(username=username)
+        user_type = 'seller'
+    
+    else:
+        return redirect('view users')
+
+    print(user_details)
+    return render(request, 'realestate/viewProfile.html', {'user_info': user_details, 'type': user_type})
+
+def mark_malicious(request, username):
+    if BuyerInfo.objects.filter(username=username).exists():
+        user = BuyerInfo.objects.get(username=username)
+        user.malicious = True
+        user.save()
+    else:
+        user = SellerInfo.objects.get(username=username)
+        user.malicious = True
+        user.save()
+    return redirect('view users') 
+
+def view_currrent_listings(request):
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    username = request.session['user_data']['username']
+    listing_info = ListingInfo.objects.filter(buyer=username)
+    return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})

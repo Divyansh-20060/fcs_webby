@@ -14,14 +14,15 @@
     </div>
     {% endfor %}
 
-    <form method="post" enctype="multipart/form-data">
+    <!-- <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         {{ form.as_p }} 
         
         <button type="submit">Create Listing</button>
-    </form>
-    <!-- <form method="post" enctype="multipart/form-data">
+    </form> -->
+
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         <p>
@@ -85,7 +86,7 @@
         </p>
 
         <button type="submit">submit</button>
-    </form> -->
+    </form>
 
 </body>
 </html>

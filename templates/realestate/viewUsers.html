@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User List</title>
+</head>
+<body>
+    <h1>User List</h1>
+
+    <h2>Sellers</h2>
+    
+    <ul>
+        {% for seller in sellers %}
+            <li>
+                {{ seller }} (Seller)
+                <a href="{% url 'view profile' seller %}">View Profile</a>
+            
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Buyers</h2>
+    
+    <ul>
+        {% for buyer in buyers %}
+            <li>
+                {{ buyer }} (Buyer)
+                <a href="{% url 'view profile' buyer %}">View Profile</a>
+            
+            </li>
+        {% endfor %}
+    </ul>
+    
+</body>
+</html>
