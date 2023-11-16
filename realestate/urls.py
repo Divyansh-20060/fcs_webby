@@ -6,6 +6,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('',ekycStart,name="ekyc page"),
+    
+    path('ekyc2/<int:listing_id>',ekyc2,name="ekyc2"),
+    
     path('mainWelcome/',mainWelcome,name="main welcome"),
     
     path('emailVerify/',emailVerifyPage,name="email verify"),
@@ -30,13 +33,10 @@ urlpatterns = [
     path('buyerInterested/<int:listing_id>', buyerInterested, name = "buyerInterested"),
     path('makePayment/<int:listing_id>', makePayment, name="makePayment"),
     path('view_currrent_listings', view_currrent_listings, name="view_currrent_listings"),
-
+    
     path('userProfile/', userProfile, name = "user Profile"),
     path('updatePassword/',updatePassword,name="update password"),
     path('updateNamePOI/', updateNamePOI, name= "update Name POI"),
-
-    path('showListings/',showListings,name="showListings"),
-    path('purchaseHistory/',purchaseHistory,name="Purchases"),
     
     path('returnHome/',returnHome,name="return home"),
     
@@ -48,8 +48,14 @@ urlpatterns = [
     
     path('viewUsers/', viewUsers, name= "view users"),
     path('viewProfile/<str:username>/', viewProfile, name='view profile'),
-    path('mark_malicious/<str:username>', mark_malicious, name="mark_malicious")
+    path('mark_malicious_buyer/<str:username>/<int:is_malicious>', mark_malicious_buyer, name="mark_malicious_buyer"),
+    path('before_sign/<int:listing_id>', before_sign, name="before sign"),
+    path('beforeListing/', beforeListing, name="before listing"),
+    path('otp2/<int:listing_id>', otp2, name="otp2"),
+    path('otp3/', otp3, name="otp3"),
+    path('delete_buyer/<str:username>', delete_buyer, name="delete_buyer"),
     
+    path('logout/', logout, name="logout"),
     #path('adminProfile/', admin, name = "admin password"),
     
     

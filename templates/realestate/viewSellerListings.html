@@ -11,6 +11,12 @@
     </div>
     {% endfor %}
     <h1>Seller Listings</h1>
+    <p>
+        <strong>Return home</strong>
+        <form action="{% url 'return home' %}" method="get">
+            <button type="submit">home</button>
+        </form>
+    </p>
     <style>
         table {
             border-collapse: collapse;
@@ -51,6 +57,7 @@
                 <th>Sign</th>
                 <th>Approve</th>
                 <th>Reject</th>
+                <th>Mark Malicious</th>
 
 
             </tr>
@@ -122,7 +129,7 @@
                     </td>
                     <td>
                         {% if info.status == "seller_interested" %}
-                            <a href="{% url 'sellerSignContract' info.ID %}">Sign</a>
+                            <a href="{% url 'ekyc2' info.ID %}">Sign</a>
                         {% else %}
                             listing is sold or in progress
                         {% endif %}
@@ -140,6 +147,14 @@
                         {% else %}
                             listing is sold or in progress
                         {% endif %}
+                    </td>
+                    <td>
+                        {% if info.buyer %}
+                            <a href="{% url 'mark_malicious_buyer' info.buyer 1 %}">Mark</a>
+                        {% else %}
+                            listing is sold or in progress
+                        {% endif %}
+                        
                     </td>
 
                 </tr>

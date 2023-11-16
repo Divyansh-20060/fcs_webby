@@ -7,6 +7,11 @@
 <body>
     <h1>Welcome to Buyer Home</h1>
 
+    {% for message in messages %}
+    <div class="alert" role = "alert">
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
 <!-- Search for Listings -->
 
 
@@ -27,11 +32,6 @@
         </form>
     </p>
 
-    <!-- Purchase History -->
-    <section>
-        <h2>Purchase History</h2>
-        <button id="submit" onclick="handlePurchaseHistory()">Purchase Statement</button>
-    </section>
 
     <p>
         <h1>Browse Listings</h1>
@@ -44,7 +44,13 @@
         <h1>Current Listings</h1>
         <a href="{% url 'view_currrent_listings' %}">View Current Listings</a>
     </p>
-    <script type="text/javascript" src="{% static '/js/buyerHome.js' %}">
-    </script>
+    
+    <p>
+        <strong>Logout</strong>
+        <form action="{% url 'logout' %}" method="get">
+            <button type="submit">logout</button>
+        </form>
+    </p>
+
 </body>
 </html>

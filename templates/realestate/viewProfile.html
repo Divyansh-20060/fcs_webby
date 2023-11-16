@@ -24,12 +24,13 @@
     <a href="{{ user_info.proof_of_id.url }}">Download Proof of ID</a>
 
     <p><strong>malicous:</strong> {{ user_info.malicious }}</p>
-    {% if type == "seller" %}
-        <a href="{% url 'mark_malicious' user_info.username %}">Mark Malicious</a>
-    {% else %}
-        listing is sold or in progress
-    {% endif %}
+    <p>
+        <a href="{% url 'mark_malicious_buyer' user_info.username 0 %}">Un-Mark Malicious</a>
+    </p>
 
+    <p>
+        <a href="{% url 'delete_buyer' user_info.username %}"> Delete user </a>
+    </p>
     <p>
         <strong>Return home</strong>
         <form action="{% url 'return home' %}" method="get">

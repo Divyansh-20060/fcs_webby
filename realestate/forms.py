@@ -32,3 +32,15 @@ class CreateListingForm(forms.Form):
 
 class submitSignatureform(forms.Form):
     signature = forms.CharField(max_length=512)
+
+class filterForm(forms.Form):
+    type_property = forms.CharField(max_length=50)
+    amenities = forms.CharField(max_length=50)
+    locality = forms.CharField(max_length=50)
+    type_contract = forms.CharField(max_length=50)
+    min_date = forms.DateField()
+    max_date = forms.DateField()
+    min_budget = forms.IntegerField()
+    max_budget = forms.IntegerField()
+
+    

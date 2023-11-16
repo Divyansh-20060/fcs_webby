@@ -11,6 +11,82 @@
     </div>
     {% endfor %}
     <h1>All Listings</h1>
+    <h3> Filters </h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <p>
+            <label for="type_property">Type Property:</label>
+            <select id="type_property" name="type_property">
+
+                <option value="residential">residential</option>
+                <option value="commercial">commercial</option>
+                <option value="appartment">appartment</option>
+                <option value="industrial">industrial</option>
+            </select>
+        </p>
+
+        <p>
+            <label for="amenities">Select amenities:</label>
+            <select id="amenities" name="amenities">
+
+                <option value="security">security</option>
+                <option value="clubhouse">clubhouse</option>
+                <option value="parking">parking</option>
+                <option value="furnished">furnished</option>
+
+            </select>
+        </p>
+
+        <p>
+            <label for="locality">Locality:</label>
+            <input type="text" id="locality" name="locality" placeholder="Type something..."> 
+        </p>
+
+
+        <p>
+            <label for="type_contract">Type contract</label>
+            <select id="type_contract" name="type_contract">
+
+                <option value="sale">sale</option>
+                <option value="rental">rental</option>
+
+            </select>
+        </p>
+
+        <p>
+            <label for="date">Min Date</label>
+            <input type="date" id="date" name="min_date">
+        </p>
+
+        <p>
+            <label for="date">Max Date</label>
+            <input type="date" id="date" name="max_date">
+        </p>
+
+        <p>
+            <label for="budget">Min Budget</label>
+            <input type="number" id="budget" name="min_budget" placeholder="Type something..." min="1" max="1000000000" required> 
+        </p>
+
+        <p>
+            <label for="budget">Max Budget</label>
+            <input type="number" id="budget" name="max_budget" placeholder="Type something..." min="1" max="1000000000" required> 
+        </p>
+
+
+        <button type="submit">Filter</button>
+
+        <p>
+            <strong>Return home</strong>
+            <form action="{% url 'return home' %}" method="get">
+                <button type="submit">home</button>
+            </form>
+        </p>
+
+    </form>
+    
+
     <style>
         table {
             border-collapse: collapse;
@@ -49,6 +125,7 @@
                 <th>Interested</th>
                 <th>Sign</th>
                 <th>Make Payment</th>
+                <th>mark malicious</th>
 
             </tr>
         </thead>
@@ -110,17 +187,20 @@
                     </td>
                     <td>
                         {% if info.status == "seller_interested" %}
-                            <a href="{% url 'buyerSignContract' info.ID %}">Sign</a>
+                            <a href="{% url 'before sign' info.ID %}">Sign</a>
                         {% else %}
                             listing is sold or in progress
                         {% endif %}
                     </td>
                     <td>
                         {% if info.status == "signs_uploaded" %}
-                            <a href="{% url 'makePayment' info.ID %}">Make Payment</a>
+                            <a href="{% url 'ekyc2' info.ID %}">Make Payment</a>
                         {% else %}
                             listing is sold or in progress
                         {% endif %}
+                    </td>
+                    <td>
+                        
                     </td>
                     <!--edit button-->
 

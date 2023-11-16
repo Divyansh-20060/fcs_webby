@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 import requests
 from realestate.forms import *
 from realestate.models import *
@@ -10,7 +11,6 @@ import secrets
 import re
 from datetime import date
 from datetime import datetime
-
 from django.core.files.base import ContentFile
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -150,24 +150,89 @@ def check_input(string, pattern):
     else:
         return False
 
+def ekyc2(request,listing_id):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    user_type = request.session['user_data']['user_type']
+    
+    if( user_type != 'buyer' and user_type != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    if request.method == "POST":
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        
+        session_email = request.session['ekyc_data']['email']
+        session_status = request.session['ekyc_data']['status']
+
+        if email != session_email:
+            messages.success(request, 'Use the same email as you did at initial ekyc!')
+        
+        elif session_status != 'success':
+            messages.success(request, "Can't verify your initial ekyc login please start over.")
+            return redirect('ekyc page')
+        
+        else:
+            data = {
+                'email': email,
+                'password': password
+            }
+
+            response = requests.post("https://192.168.3.39:5000/kyc", json=data, verify=False)
+                
+            response_data = response.json()
+            message = response_data['message']
+            status = response_data['status']
+            
+            messages.success(request, message)
+
+            if(status == 'success'):
+                
+                if 'user_data' not in request.session:
+                    return redirect("main welcome")
+                
+                
+                if request.session['user_data']['user_type'] == 'buyer':
+                    request.session['ekyc2_status'] = True
+                    val = listing_id
+                    url =  reverse('makePayment', args=[val])
+                    return redirect(url)
+                
+                elif request.session['user_data']['user_type'] == 'seller':
+                    request.session['ekyc2_status'] = True
+                    val = listing_id
+                    url =  reverse('sellerSignContract', args=[val])
+                    return redirect(url)
+                
+                else:
+                    return redirect("main welcome")
+    return render (request, 'realestate/ekycPage.html')
+
 def ekycStart(request):
     if request.method == "POST":
         
         email = request.POST.get('email')
-        password = request.POST.get('password')
-
+        password = request.POST.get('password')        
+        
         data = {
             'email': email,
             'password': password
         }
 
         response = requests.post("https://192.168.3.39:5000/kyc", json=data, verify=False)
-        
+            
         response_data = response.json()
-        
+            
         message = response_data['message']
         status = response_data['status']
-        
+            
         messages.success(request, message)
 
         if(status == 'success'):
@@ -176,7 +241,7 @@ def ekycStart(request):
                 'status' : status
             }
             return redirect('main welcome')
-        
+
     return render (request, 'realestate/ekycPage.html')
 
 def mainWelcome(request):
@@ -234,7 +299,11 @@ def otpPage(request):
         return redirect('ekyc page')
     
     if 'otp_data' not in request.session:
+        messages.success(request,"weird behavior!")
         return redirect('main welcome')
+    
+    if (position_checker(request) == False):
+        return redirect(request,"wowowowowoowowowowowowowowowowoowowowowowkdsjsjfkjdjfdjlakfjalfskfsjdfjlksdfjk ahhhhhhhhhhhhhhhhhh i can't do this anymore ahhhhhhhhhhhhhhhhh god help mememmemememasdkd asddhhhh")
     
     if request.method == 'POST':
         
@@ -252,7 +321,7 @@ def otpPage(request):
                 messages.success(request, 'wrong otp')
             
             else:
-                print("success!")
+            
                 
                 if request.session['position'] == 'main_welcome':
                 
@@ -260,6 +329,9 @@ def otpPage(request):
 
                 elif request.session['position'] == 'profile_page':
                     
+                    if (user_data_checker(request) == False):
+                        return redirect('main welcome')
+    
                     user_type = request.session['user_data']['user_type']
                     cusername = request.session['user_data']['username']
                     
@@ -526,7 +598,9 @@ def sellerHome(request):
     
     if (user_data_checker(request) == False):
         return redirect('main welcome')
-    
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     return render(request,'realestate/sellerHome.html')
 
 def createListing(request):
@@ -536,6 +610,18 @@ def createListing(request):
     
     if (user_data_checker(request) == False):
         return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    if 'before_verdict' not in request.session:
+        messages.success(request,"please do the otp check")
+        return redirect('seller home')
+    
+    if  request.session['before_verdict']['success'] != True:
+        messages.success(request,"please do the otp check correctly")
+        return redirect('seller home')
     
     if request.method == "POST":
         
@@ -576,7 +662,8 @@ def createListing(request):
                 else:
                     ListingInfo.objects.create(typePropety = ftype_property, seller = username, status = "unsold", date = fdate, amenity = famenities, budget = fbudget, locality = flocality, typeContract = ftype_contract, ownershipDoc = fownershipDoc, identityDoc = fidentityDoc, malicious = False )
                     messages.success(request, 'listing created successfully')
-                    # return redirect("seller home")
+                    del request.session['before_verdict']
+                    return redirect("seller home")
         else:
             messages.success(request, 'what is wrong with you')
     else:
@@ -589,8 +676,14 @@ def userProfile(request):
     
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    user_type = request.session['user_data']['user_type']
+    
+    if( user_type != 'buyer' and user_type != 'seller'):
+        messages.success(request,"unauthorised user access !")
         return redirect('main welcome')
     
     user_data_checker(request)
@@ -761,8 +854,14 @@ def updateNamePOI(request):
     
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    user_type = request.session['user_data']['user_type']
+    
+    if( user_type != 'buyer' and user_type != 'seller'):
+        messages.success(request,"unauthorised user access !")
         return redirect('main welcome')
     
     if request.method == 'POST':
@@ -905,14 +1004,22 @@ def adminHome(request):
     elif (user_data_checker(request) == False):
         return redirect('main welcome')
     
+    elif( request.session['user_data']['user_type'] != 'admin'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
     else:
         return render(request,'realestate/adminHome.html')
 
 def buyerHome(request):
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
     
-    elif (user_data_checker(request) == False):
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
         return redirect('main welcome')
     
     else:
@@ -928,33 +1035,19 @@ def buyerHome(request):
 #     # print("django log: great success wow")
 #     return render(request,'realestate/buyerHome.html')
 
-def showListings(request):
-    
-    if (ekyc_info_checker(request) == False):
-        return redirect('ekyc page')
-    
-    if (user_data_checker(request) == False):
-        return redirect('main welcome')
-    
-    return render(request,'realestate/showListings.html')
 
-def purchaseHistory(request):
-    
-    if (ekyc_info_checker(request) == False):
-        return redirect('ekyc page')
-    
-    if (user_data_checker(request) == False):
-        return redirect('main welcome')
-    
-    return render(request,'realestate/purchaseHistory.html')
 
 
 def viewSellerListings(request):
 
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
         return redirect('main welcome')
     
     username = request.session['user_data']['username']
@@ -973,20 +1066,76 @@ def viewBuyerListings(request):
 
     if (user_data_checker(request) == False):
         return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
 
-    listing_info = ListingInfo.objects.filter(status="unsold")
-    return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+    if request.method == "POST":
+        form = filterForm(request.POST)
+        if form.is_valid():
+            # messages.success(request, "yo form is valid")  
+            ftype_property = form.cleaned_data['type_property']
+            famenities = form.cleaned_data['amenities']
+            flocality = form.cleaned_data['locality']
+            ftype_contract = form.cleaned_data['type_contract']
+
+            f_min_date = form.cleaned_data['min_date']
+            f_max_date = form.cleaned_data['max_date']
+
+            f_min_budget = form.cleaned_data['min_budget']
+            f_max_budget = form.cleaned_data['max_budget']
+
+
+            ##validate input
+            valid_ftype_property = check_input(ftype_property, type_property_pattern)
+            valid_famenities = check_input(famenities, amenities_pattern)
+            valid_flocality = check_input(flocality, locality_pattern)
+            valid_ftype_contract = check_input(ftype_contract, type_contract_pattern)
+
+            valid_f_min_date = check_input(str(f_min_date), date_pattern)
+            valid_f_max_date = check_input(str(f_max_date), date_pattern)
+
+            valid_f_min_budget = check_input(str(f_min_budget), budget_pattern)
+            valid_f_max_budget = check_input(str(f_max_budget), budget_pattern)
+
+            if not (valid_ftype_property and valid_f_min_date and valid_f_max_date and valid_famenities and valid_f_min_budget and valid_f_max_budget and valid_flocality and valid_ftype_contract):
+                messages.success(request, 'Do not inject code, bakayarou')
+            else:
+                ## now apply filters 
+                queryset = ListingInfo.objects.filter(status="unsold")
+                queryset = queryset.filter(typePropety__icontains=ftype_property)
+                queryset = queryset.filter(amenity__icontains=famenities)
+                queryset = queryset.filter(locality__icontains=flocality)
+                queryset = queryset.filter(typeContract__icontains=ftype_contract)
+                queryset = queryset.filter(date__gte=f_min_date)
+                queryset = queryset.filter(date__lte=f_max_date)
+                queryset = queryset.filter(budget__gte=f_min_budget)
+                queryset = queryset.filter(budget__lte=f_max_budget)
+                return render(request, 'realestate/viewBuyerListings.html', {'listing_info': queryset,'form':form})
+        else:
+            messages.success(request, 'what is wrong with you')
+    else:
+        form = filterForm()
+        listing_info = ListingInfo.objects.filter(status="unsold")
+        return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info, 'form':form})
 
 def edit_listing(request, listing_id):
     
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
         return redirect('main welcome')
     
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     
     listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "unsold":
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     # return render(request, 'realestate/edit_listing.html', {'listing': listing})
 
     if request.method == 'POST':
@@ -1045,11 +1194,20 @@ def delete_listing(request, listing_id):
     
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
         return redirect('main welcome')
     
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+
+    
     listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "unsold":
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+
     if request.method == "POST":
         listing.delete()
         return redirect('view seller listings')
@@ -1088,15 +1246,32 @@ def buyerSignContract(request, listing_id):
     
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
         return redirect('main welcome')
     
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     
-    listing_info = ListingInfo.objects.filter()
+    
+    
+    if 'sign_otp_verdict' not in request.session:
+        messages.success(request,"please do the otp check")
+        return redirect('seller home')
+    
+    if  request.session['sign_otp_verdict']['success'] != True:
+        messages.success(request,"please do the otp check correctly")
+        return redirect('seller home')
+    
+    
+    listing_info = ListingInfo.objects.filter(buyer=request.session['user_data']['username'])
     listing = ListingInfo.objects.filter(ID=listing_id).first()
-    type_contract = listing.typeContract
+    if listing.status != "seller_interested":
+        messages.success(request,"please do the otp check correctly")
+        return redirect('seller home')
 
+    type_contract = listing.typeContract
     if request.method == "POST": ##when buyer submits the signature form
         form = submitSignatureform(request.POST)
         if form.is_valid():
@@ -1183,12 +1358,29 @@ def sellerSignContract(request, listing_id):
 
     if (ekyc_info_checker(request) == False):
         return redirect('ekyc page')
-    
+
     if (user_data_checker(request) == False):
         return redirect('main welcome')
     
-    seller_info = ListingInfo.objects.filter()
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    if( 'ekyc2_status' not in request.session):
+        messages.success(request,"2nd ekyc not done !")
+        return redirect('seller home')
+    
+    if(request.session['ekyc2_status'] != True):
+        messages.success(request,"2nd ekyc not done propely !")
+        return redirect('seller home')
+    
+    
+    seller_info = ListingInfo.objects.filter(seller=request.session['user_data']['username'])
     listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "seller_interested":
+        messages.success(request,"2nd ekyc not done propely !")
+        return redirect('seller home')
+
     type_contract = listing.typeContract
 
     if request.method == "POST": ##when buyer submits the signature form
@@ -1230,6 +1422,8 @@ def sellerSignContract(request, listing_id):
                             listing.rentalContract_seller.delete()
                         listing.save()
                         messages.success(request, "signature NOT valid")
+                        
+                        del request.session['ekyc2_status']
                         return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
             except Exception as e:
                 messages.success(request, e)
@@ -1272,8 +1466,22 @@ def sellerSignContract(request, listing_id):
     return render(request, 'realestate/buyerSignContract.html', {'form': form, 'listing':listing})
 
 def buyerInterested(request, listing_id):
-    listing_info = ListingInfo.objects.filter()
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    listing_info = ListingInfo.objects.filter(status="unsold")
     listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "unsold":
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     listing.status = "buyer_interested"
     buyer_username = request.session['user_data']['username']
     listing.buyer = buyer_username
@@ -1281,19 +1489,51 @@ def buyerInterested(request, listing_id):
     return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
 
 def sellerApprove(request, listing_id):
-    seller_info = ListingInfo.objects.filter()
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    seller_info = ListingInfo.objects.filter(seller=request.session['user_data']['username'])
     listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "buyer_interested":
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     listing.status = "seller_interested"
     listing.save()
     return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
 
 def sellerReject(request, listing_id):
-    seller_info = ListingInfo.objects.filter()
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    seller_info = ListingInfo.objects.filter(seller=request.session['user_data']['username'])
     listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "buyer_interested" and  listing.status != "seller_interested":
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     listing.status = "unsold"
     listing.buyer = None
     if listing.saleContract:
         listing.saleContract.delete()
+    if listing.rentalContract_buyer:
+        listing.rentalContract_buyer.delete()
+    if listing.rentalContract_seller:
+        listing.rentalContract_seller.delete()
     listing.save()
     return render(request, 'realestate/viewSellerListings.html', {'seller_info': seller_info})
 
@@ -1320,8 +1560,31 @@ def add_signatures(request, listing_id):
 
 
 def makePayment(request, listing_id):
-    listing = ListingInfo.objects.filter(ID=listing_id).first()
     
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    if( 'ekyc2_status' not in request.session):
+        messages.success(request,"2nd ekyc not done !")
+        return redirect('buyer home')
+    
+    if(request.session['ekyc2_status'] != True):
+        messages.success(request,"2nd ekyc not done propely !")
+        return redirect('buyer home')
+    
+    listing = ListingInfo.objects.filter(ID=listing_id).first()
+    if listing.status != "signs_uploaded":
+        messages.success(request,"2nd ekyc not done propely !")
+        return redirect('buyer home')
+    
+    del request.session['ekyc2_status']
     
     amount = listing.budget
     client = razorpay.Client(auth= ('rzp_test_DQb2iWTK131DuM','VjneqA7APbwDsQI0uW5FpNiT'))
@@ -1339,6 +1602,7 @@ def makePayment(request, listing_id):
 
 @csrf_exempt
 def transactionVerdict(request, listing_id):
+    
     
     if request.method == 'POST':
         
@@ -1379,6 +1643,16 @@ def transactionVerdict(request, listing_id):
     
 def adminProfile(request):
     
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'admin'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
     username = request.session['user_data']['username']
     user_type = request.session['user_data']['user_type']
     user_info = AdminInfo.objects.get(username=username)
@@ -1391,12 +1665,32 @@ def adminProfile(request):
 
 def viewUsers(request):
     
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'admin'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
     sellers = SellerInfo.objects.values_list('username', flat=True)
     buyers = BuyerInfo.objects.values_list('username', flat=True)
     
     return render(request, 'realestate/viewUsers.html', {'sellers': sellers, 'buyers': buyers})
 
 def viewProfile(request, username):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    if( request.session['user_data']['user_type'] != 'admin'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
     
     user_details = None
     user_type = None
@@ -1410,21 +1704,47 @@ def viewProfile(request, username):
         user_type = 'seller'
     
     else:
+        messages.success(request,"user does not exist. (it won't work)")
         return redirect('view users')
 
-    print(user_details)
     return render(request, 'realestate/viewProfile.html', {'user_info': user_details, 'type': user_type})
 
-def mark_malicious(request, username):
+def mark_malicious_buyer(request, username, is_malicious):
+
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+
+    if( is_malicious == 0 and request.session['user_data']['user_type'] != 'admin'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+
     if BuyerInfo.objects.filter(username=username).exists():
-        user = BuyerInfo.objects.get(username=username)
-        user.malicious = True
-        user.save()
+        if is_malicious == 1:
+            user = BuyerInfo.objects.get(username=username)
+            user.malicious = True
+            user.save()
+            return redirect('seller home')
+        if is_malicious == 0:
+            user = BuyerInfo.objects.get(username=username)
+            user.malicious = False
+            user.save()
+            return redirect('view users')
+    elif SellerInfo.objects.filter(username=username).exists():
+        if is_malicious == 1:
+            user = SellerInfo.objects.get(username=username)
+            user.malicious = True
+            user.save()
+            return redirect('seller home')
+        if is_malicious == 0:
+            user = SellerInfo.objects.get(username=username)
+            user.malicious = False
+            user.save()
+            return redirect('view users')
     else:
-        user = SellerInfo.objects.get(username=username)
-        user.malicious = True
-        user.save()
-    return redirect('view users') 
+        return redirect('view users')
 
 def view_currrent_listings(request):
     if (ekyc_info_checker(request) == False):
@@ -1433,6 +1753,209 @@ def view_currrent_listings(request):
     if (user_data_checker(request) == False):
         return redirect('main welcome')
     
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
     username = request.session['user_data']['username']
     listing_info = ListingInfo.objects.filter(buyer=username)
     return render(request, 'realestate/viewBuyerListings.html', {'listing_info': listing_info})
+
+# check for userdata and ekyc
+def before_sign(request, listing_id):
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+        
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    otp = str(secrets.choice(otps))
+    
+    user_type = request.session['user_data']['user_type']
+    cusername = request.session['user_data']['username']
+    
+    instance = None
+    
+    if user_type == "buyer":        
+        instance = BuyerInfo.objects.get(username=cusername)
+    
+    elif user_type == "seller":
+        instance = SellerInfo.objects.get(username=cusername)
+    
+    if instance == None:
+        return redirect("main welcome")
+        
+    femail = instance.email
+     
+    
+    send_mail('OTP for sign up', otp, EMAIL_HOST_USER,[femail], fail_silently=True)
+                
+    request.session['sign_otp'] = otp
+ 
+    val = listing_id
+    url =  reverse('otp2', args=[val])
+    return redirect(url)
+    # if 'otp_data' not in request.session:
+    #     return redirect('main welcome')
+
+# check for userdata and ekyc
+def otp2(request, listing_id):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+        
+    if( request.session['user_data']['user_type'] != 'buyer'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    if 'sign_otp' not in request.session:
+        return redirect("main welcome")
+    
+    if request.method == 'POST':
+        
+        sign_otp = request.session['sign_otp']
+        otp = request.POST['otp']
+
+        if sign_otp != otp:
+            messages.success(request,"otp is incorrect")
+        
+        else:
+            del request.session['sign_otp']
+            
+            request.session['sign_otp_verdict'] = {
+                "success": True
+            }
+            
+            val = listing_id
+            url =  reverse('buyerSignContract', args=[val])
+            return redirect(url)
+    
+    return render (request, 'realestate/otpPage.html')
+
+def beforeListing(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+        
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    otp = str(secrets.choice(otps))
+    
+    user_type = request.session['user_data']['user_type']
+    cusername = request.session['user_data']['username']
+    
+    instance = None
+    
+    if user_type == "seller":
+        instance = SellerInfo.objects.get(username=cusername)
+    
+    if instance == None:
+        return redirect("main welcome")
+        
+    femail = instance.email
+     
+    
+    send_mail('OTP for sign up', otp, EMAIL_HOST_USER,[femail], fail_silently=True)
+                
+    request.session['before_otp'] = otp
+ 
+    return redirect('otp3')
+    
+def otp3(request):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+        
+    if( request.session['user_data']['user_type'] != 'seller'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    
+    if 'before_otp' not in request.session:
+        return redirect("main welcome")
+    
+    if request.method == 'POST':
+        
+        before_otp = request.session['before_otp']
+        otp = request.POST['otp']
+
+        if before_otp != otp:
+            messages.success(request,"otp is incorrect")
+        
+        else:
+            del request.session['before_otp']
+            
+            request.session['before_verdict'] = {
+                "success": True
+            }
+            
+            return redirect("create listing")
+    
+    return render (request, 'realestate/otpPage.html')
+
+def delete_buyer(request, username):
+    
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+    
+    elif (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    elif( request.session['user_data']['user_type'] != 'admin'):
+        messages.success(request,"unauthorised user access !")
+        return redirect('main welcome')
+    
+    ## first revert the active listings to unsold
+    # seller_info = ListingInfo.objects.filter()
+    if BuyerInfo.objects.filter(username=username).exists():
+        listing = ListingInfo.objects.filter(buyer=username)
+        listing = listing.filter(status__in=["buyer_interested", "seller_interested", "signs_uploaded"])
+        listing.update(status="unsold", buyer=None)
+        for item in listing:
+            if item.saleContract:
+                item.saleContract.delete()
+            if item.rentalContract_buyer:
+                item.rentalContract_buyer.delete()
+            if item.rentalContract_seller:
+                item.rentalContract_seller.delete()
+        # listing.save()
+        buyer = BuyerInfo.objects.get(username=username)
+        buyer.delete()
+        return redirect('view users')
+    elif SellerInfo.objects.filter(username=username).exists():
+        ##simply delete the seller
+        listing = ListingInfo.objects.filter(seller=username)
+        listing = listing.filter(status__in=["buyer_interested", "seller_interested", "signs_uploaded", "unsold"])
+        listing.delete()
+
+        seller = SellerInfo.objects.get(username=username)
+        seller.delete()
+        return redirect('view users')
+    else:
+        return redirect('view users')
+    
+def logout(request):
+    if (ekyc_info_checker(request) == False):
+        return redirect('ekyc page')
+
+    if (user_data_checker(request) == False):
+        return redirect('main welcome')
+    
+    del request.session['user_data']
+    
+    return redirect("main welcome")

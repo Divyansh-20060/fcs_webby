@@ -17,7 +17,7 @@
     
     <p>
         <h1>Create a new Listing</h1>
-        <form action="{% url 'create listing' %}" method="get">
+        <form action="{% url 'before listing' %}" method="get">
             <button type="submit">Create Listing</button>
         </form>
     </p>
@@ -35,6 +35,13 @@
             <button type="submit">view</button>
         </form>
         <!-- <a href="{% url 'view seller listings' %}">View Seller Info</a> -->
+    </p>
+
+    <p>
+        <strong>Logout</strong>
+        <form action="{% url 'logout' %}" method="get">
+            <button type="submit">logout</button>
+        </form>
     </p>
 
 </body>
